@@ -1,25 +1,18 @@
 package pl.cbr.notebook;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.Date;
+
+@AllArgsConstructor
+@Data
 public class FileData {
-    private final String fileName;
-    private final String data;
-    private final String modificationDate;
+    private String  data;
+    private String  fileName;
+    private Date    modificationDate;
 
-    public FileData(String fileName, String data,  String modificationDate) {
-        this.fileName = fileName;
-        this.data = data;
-        this.modificationDate = modificationDate;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public String getModificationDate() {
-        return modificationDate;
+    public static FileData empty() {
+        return new FileData("", null, new Date(System.currentTimeMillis()));
     }
 }

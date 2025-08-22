@@ -1,6 +1,9 @@
 package pl.cbr.notebook;
 
+import pl.cbr.notebook.utils.DateUtil;
+
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,11 +19,12 @@ public class NotebookStorage {
     }
 
     public static void save(Note note) {
-        FileStorage.save(note.getFileName(), note.getData().replaceAll("\r+\n", "\rs\n"));
+        FileStorage.save(note.getFileName(), note.getData().replaceAll("\r+\n", "\r\n"));
     }
 
-    public static void copyToBackup(Note note) {
-        FileStorage.copyToBackup(note.getFileName(), StorageConfig.BACKUP_DIR + note.getFileName());
+    public static void copyToBackup(Note note, String operation) {
+        String prefix = DateUtil.format(new Date(System.currentTimeMillis()), "yyyyMMdd_HHmmss_");
+        FileStorage.copyToBackup(note.getFileName(), StorageConfig.BACKUP_DIR + prefix + note.getFileName());
     }
 
     public static void delete(Note note) {

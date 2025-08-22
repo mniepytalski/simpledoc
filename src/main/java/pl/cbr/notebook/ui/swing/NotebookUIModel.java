@@ -16,6 +16,7 @@ public class NotebookUIModel {
     private final Notebook notebook;
 
     @Setter
+    @Getter
     private JTextPane textArea;
 
     @Getter
@@ -55,6 +56,9 @@ public class NotebookUIModel {
     }
 
     public void saveNote() {
+        if (textArea.getText().trim().isEmpty()) {
+            return;
+        }
         notebook.getActualNote().setData(textArea.getText());
         Note note = notebook.save(notebook.getActualNote());
         note.setTitle(notebook.getNoteTitle(note.getData()));
@@ -69,21 +73,24 @@ public class NotebookUIModel {
             }
         }
         notebook.getActualNote().setTitle(notebook.getNoteTitle(textArea.getText()));
+        recreateList(searchNoteByText(searchField.getText()));
         log.info("save: {}", note.getFileName());
     }
 
     public List<Note> searchNote(String searchText) {
         List<Note> notes = searchNoteByText(searchText);
-        titleModel.removeAllElements();
-        notes.forEach(note -> titleModel.addElement(note));
+        recreateList(notes);
         return notes;
     }
 
     public List<Note> searchNoteByText(String searchText) {
         if (searchText == null || searchText.isEmpty()) {
-            return notebook.getNotes();
+            return notebook.sortedNotes();
         }
-        return notebook.getNotes().stream().filter(note -> note.getData().toLowerCase().contains(searchText.toLowerCase())).collect(Collectors.toList());
+        return notebook.getNotes().stream().filter(note -> note.getData().toLowerCase().contains(searchText.toLowerCase()))
+                .sorted((o1, o2) -> o2.getFile().getModificationDate()
+                        .compareTo(o1.getFile().getModificationDate()))
+                .collect(Collectors.toList());
     }
 
     public void setNoteFromTextId(String textId) {
@@ -96,5 +103,10 @@ public class NotebookUIModel {
         notebook.setActualNote(Note.empty());
         textArea.setText("");
         textArea.grabFocus();
+    }
+
+    private void recreateList(List<Note> notes) {
+        titleModel.removeAllElements();
+        notes.forEach(note -> titleModel.addElement(note));
     }
 }

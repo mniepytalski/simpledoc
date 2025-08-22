@@ -1,15 +1,21 @@
 package pl.cbr.notebook.ui.swing;
 
+import pl.cbr.notebook.Diary;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
+import pl.cbr.notebook.utils.DateUtil;
 
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class NotebookUI {
     private final NotebookUIModel model;
@@ -58,9 +64,43 @@ public class NotebookUI {
             topLeftPanel.add(searchField);
             rightPanel.add(topLeftPanel, BorderLayout.NORTH);
 
-
             JTextPane textArea = new JTextPane();
             model.setTextArea(textArea);
+
+            Diary diary = new Diary();
+            textArea.addKeyListener(new KeyListener() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                   diary.event(e.getKeyChar(),textArea.getCaretPosition());
+//                    System.out.println("key:" + e.getKeyChar() + "," + textArea.getCaretPosition());
+//                    if (textArea.getCaretPosition() == 10 ) {
+//                        textArea.getStyledDocument().setCharacterAttributes(textArea.getCaretPosition() - 2 , 2, Keyword.TAG.getStyle(), true);
+//                    }
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+
+                }
+            });
+            textArea.addCaretListener(new CaretListener() {
+                @Override
+                public void caretUpdate(CaretEvent e) {
+                    int start = textArea.getSelectionStart();
+                    int end = textArea.getSelectionEnd();
+                    String selected = textArea.getSelectedText();
+
+                    if (selected != null && !selected.isEmpty()) {
+                        System.out.println("Zaznaczono od " + start + " do " + end +
+                                " → \"" + selected + "\"");
+                    }
+                }
+            });
             JScrollPane scrollPane = new JScrollPane(textArea);
             rightPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -83,35 +123,36 @@ public class NotebookUI {
                     leftPanel,
                     rightPanel
             );
-
             splitPane.setDividerLocation(150);
             splitPane.setResizeWeight(0.0);
 
             frame.add(splitPane, BorderLayout.CENTER);
+
+//            NotebookUIMenu.createMenu(frame);
+
             frame.setVisible(true);
-
-            addShortcuts(saveButton, newButton, deleteButton);
-
+            addShortcuts();
             model.cleanNoteWindow();
         });
     }
 
-    private static void addShortcuts(JButton saveButton, JButton newButton, JButton deleteButton) {
-        defineShortCut("saveAction", KeyEvent.VK_S, saveButton);
-        defineShortCut("newAction", KeyEvent.VK_N, newButton);
-        defineShortCut("deleteAction", KeyEvent.VK_D, deleteButton);
+    private void addShortcuts() {
+        defineShortCut(KeyEvent.VK_S, NotebookUIModel::saveNote);
+        defineShortCut(KeyEvent.VK_N, NotebookUIModel::newNote);
+        defineShortCut(KeyEvent.VK_D, NotebookUIModel::deleteNote);
     }
 
-    private static void defineShortCut(String actionName, int keyEvent, JButton button) {
+    private void defineShortCut(int keyEvent, Consumer<NotebookUIModel> action) {
         int menuShortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-        InputMap inputMap = button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap actionMap = button.getActionMap();
+        InputMap inputMap = model.getTextArea().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = model.getTextArea().getActionMap();
         KeyStroke keyStroke = KeyStroke.getKeyStroke(keyEvent, menuShortcutKey);
+        String actionName = "" + keyStroke;
         inputMap.put(keyStroke, actionName);
         actionMap.put(actionName, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                button.doClick();
+                action.accept(model);
             }
         });
     }
@@ -140,7 +181,8 @@ public class NotebookUI {
                     boolean isSelected, boolean cellHasFocus) {
 
                 nameLabel.setText(value.getTitle());
-                roleLabel.setText("File: " + value.getFileName());
+
+                roleLabel.setText(DateUtil.formatDate(value.getFile().getModificationDate()) + " " + value.getFileName());
 
                 nameLabel.setFont(new Font("Arial", Font.BOLD, 12));
                 roleLabel.setFont(new Font("Arial", Font.PLAIN, 11));

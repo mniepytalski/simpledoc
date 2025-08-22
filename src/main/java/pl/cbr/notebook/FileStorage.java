@@ -1,5 +1,7 @@
 package pl.cbr.notebook;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,14 +12,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
-import java.text.SimpleDateFormat;
 import java.sql.Date;
 
+@Slf4j
 public class FileStorage {
 
     public static FileData load(String fileName) {
         String fileLocation = getFileLocation(fileName);
-        String modificationDate = getModificationDate(fileLocation);
+        Date modificationDate = getModificationDate(fileLocation);
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             StringBuilder stringBuilder = new StringBuilder();
@@ -26,7 +28,7 @@ public class FileStorage {
                 stringBuilder.append(line);
                 stringBuilder.append(ls);
             }
-            return new FileData(fileName, stringBuilder.toString(), modificationDate);
+            return new FileData(stringBuilder.toString(), fileName, modificationDate);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +61,7 @@ public class FileStorage {
         try {
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -71,18 +73,16 @@ public class FileStorage {
         }
     }
 
-    private static String getModificationDate(String absoluteFileName) {
+    private static Date getModificationDate(String absoluteFileName) {
         Path path = Paths.get(absoluteFileName);
         FileTime fileLastModifiedDate;
         try {
             fileLastModifiedDate = Files.getLastModifiedTime(path);
-            Date date = new Date(fileLastModifiedDate.toMillis());
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            return simpleDateFormat.format(date);
+            return new Date(fileLastModifiedDate.toMillis());
         } catch (IOException e) {
             System.err.println("Cannot get the last modified time - " + e);
         }
-        return "";
+        return new Date(System.currentTimeMillis());
     }
 
     private static boolean exists(String absoluteFileName) {
