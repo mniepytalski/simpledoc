@@ -19,11 +19,28 @@ public class TextStyle {
         return style;
     }
 
+    public static SimpleAttributeSet urlStyle() {
+        SimpleAttributeSet style = new SimpleAttributeSet();
+        StyleConstants.setForeground(style, Color.BLUE);
+        return style;
+    }
+
+    public static SimpleAttributeSet urlUnderlineStyle() {
+        SimpleAttributeSet style = urlStyle();
+        StyleConstants.setUnderline(style, true);
+        return style;
+    }
+
     public static SimpleAttributeSet titleStyle() {
         SimpleAttributeSet style = new SimpleAttributeSet();
         StyleConstants.setForeground(style, Color.BLACK);
-        StyleConstants.setBold(style, true);
-        StyleConstants.setFontSize(style, 14);
+        StyleConstants.setFontSize(style, 22);
+        return style;
+    }
+
+    public static SimpleAttributeSet searchStyle() {
+        SimpleAttributeSet style = new SimpleAttributeSet();
+        StyleConstants.setBackground(style, Color.YELLOW);
         return style;
     }
 }

@@ -1,19 +1,19 @@
 package pl.cbr.notebook.ui.swing;
 
-import pl.cbr.notebook.Diary;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
 import pl.cbr.notebook.utils.DateUtil;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -23,11 +23,11 @@ public class NotebookUI {
     private static final int APP_WIDTH = 700;
     private static final int APP_HEIGHT = 500;
 
-    private final NoteLog log;
+    private final AppConfig appConfig;
 
     private NotebookUI() {
         model = new NotebookUIModel();
-        log = new NoteLog();
+        appConfig = new AppConfig();
     }
 
     public static void start() {
@@ -37,29 +37,29 @@ public class NotebookUI {
 
     private void createUi() {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Notebook v1.8");
+            JFrame frame = new JFrame(appConfig.getTitle());
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(APP_WIDTH, APP_HEIGHT);
 
             JPanel leftPanel = new JPanel(new BorderLayout());
             JList<Note> listOfTitles = getListOfTitles();
             JScrollPane leftScrollPane = new JScrollPane(listOfTitles);
-            leftPanel.add(leftScrollPane,  BorderLayout.CENTER);
+            leftPanel.add(leftScrollPane, BorderLayout.CENTER);
 
             JPanel rightPanel = new JPanel(new BorderLayout());
 
             JPanel topLeftPanel = new JPanel();
             topLeftPanel.setLayout(new BoxLayout(topLeftPanel, BoxLayout.X_AXIS));
-            JButton newButton = new JButton("New");
+            JButton newButton = new JButton(appConfig.getButtonNew());
             newButton.addActionListener(e -> model.newNote());
             topLeftPanel.add(newButton);
 
             JTextField searchField = new JTextField();
             model.setSearchField(searchField);
             searchField.addActionListener(e -> {
-                log.info("search: {}", e.getActionCommand());
+                NoteLog.info("search: {}", e.getActionCommand());
                 List<Note> notes = model.searchNote(e.getActionCommand());
-                notes.forEach(note -> log.info("filename: {}, title: {}", note.getFileName(), note.getTitle()));
+                notes.forEach(note -> NoteLog.info("filename: {}, title: {}", note.getFileName(), note.getTitle()));
             });
             topLeftPanel.add(searchField);
             rightPanel.add(topLeftPanel, BorderLayout.NORTH);
@@ -67,15 +67,11 @@ public class NotebookUI {
             JTextPane textArea = new JTextPane();
             model.setTextArea(textArea);
 
-            Diary diary = new Diary();
             textArea.addKeyListener(new KeyListener() {
                 @Override
                 public void keyTyped(KeyEvent e) {
-                   diary.event(e.getKeyChar(),textArea.getCaretPosition());
-//                    System.out.println("key:" + e.getKeyChar() + "," + textArea.getCaretPosition());
-//                    if (textArea.getCaretPosition() == 10 ) {
-//                        textArea.getStyledDocument().setCharacterAttributes(textArea.getCaretPosition() - 2 , 2, Keyword.TAG.getStyle(), true);
-//                    }
+//                    Diary diary = model.getNotebook().getActualNote().getDiary();
+//                    diary.event(e.getKeyChar(), textArea.getCaretPosition());
                 }
 
                 @Override
@@ -88,32 +84,72 @@ public class NotebookUI {
 
                 }
             });
-            textArea.addCaretListener(new CaretListener() {
-                @Override
-                public void caretUpdate(CaretEvent e) {
-                    int start = textArea.getSelectionStart();
-                    int end = textArea.getSelectionEnd();
-                    String selected = textArea.getSelectedText();
+            Label positionLabel = new Label(getPositionText(textArea));
+            textArea.addCaretListener(e -> {
+                positionLabel.setText(getPositionText(textArea));
+                int start = textArea.getSelectionStart();
+                int end = textArea.getSelectionEnd();
+                String selected = textArea.getSelectedText();
 
-                    if (selected != null && !selected.isEmpty()) {
-                        System.out.println("Zaznaczono od " + start + " do " + end +
-                                " → \"" + selected + "\"");
+                if (selected != null && !selected.isEmpty()) {
+                    MarkedDocument markedDocument = model.getNotebook().getMarkedDocument();
+                    markedDocument.set(start, end, selected);
+                }
+            });
+
+            textArea.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    int pos = textArea.viewToModel2D(e.getPoint());
+                    String url = model.getNotebook().getActualNote().findUrl(pos);
+                    if (url != null) {
+                        try {
+                            Desktop.getDesktop().browse(new URI(url));
+                        } catch (Exception ex) {
+                            NoteLog.info(ex.getMessage());
+                        }
                     }
                 }
             });
+
+            textArea.addMouseMotionListener(new MouseAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    int pos = textArea.viewToModel2D(e.getPoint());
+                    String url = model.getNotebook().getActualNote().findUrl(pos);
+                    if (url != null) {
+                        model.getNotebook().getActualNote().getUrls().stream()
+                                .filter(noteUrl -> noteUrl.getUrl().equals(url)).findFirst()
+                                .ifPresent(noteUrl -> {
+                                    textArea.getStyledDocument().setCharacterAttributes(noteUrl.getStart(), noteUrl.getLength(), TextStyle.urlUnderlineStyle(), true);
+                                    textArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                                    model.setUrlStyleChanged(true);
+                                });
+                    } else {
+                        if (model.isUrlStyleChanged()) {
+                            model.getNotebook().getActualNote().getUrls()
+                                    .forEach(noteUrl -> textArea.getStyledDocument().setCharacterAttributes(noteUrl.getStart(), noteUrl.getLength(), TextStyle.urlStyle(), true));
+                            textArea.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+                            model.setUrlStyleChanged(false);
+                        }
+                    }
+                }
+            });
+
+            DocumentArea.dynamicDocumentStyle(textArea, searchField, model.getNotebook());
+
             JScrollPane scrollPane = new JScrollPane(textArea);
             rightPanel.add(scrollPane, BorderLayout.CENTER);
 
             JPanel buttonPanel = new JPanel();
             buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-
-            JButton saveButton = new JButton("Save");
+            JButton saveButton = new JButton(appConfig.getButtonSave());
             saveButton.addActionListener(e -> model.saveNote());
-            JButton deleteButton = new JButton("Delete");
-
+            JButton deleteButton = new JButton(appConfig.getButtonDelete());
             buttonPanel.add(deleteButton);
-            buttonPanel.add(Box.createHorizontalGlue()); // elastyczna przestrzeń
+            buttonPanel.add(Box.createHorizontalGlue());
             buttonPanel.add(saveButton);
+            buttonPanel.add(positionLabel);
             deleteButton.addActionListener(e -> model.deleteNote());
 
             rightPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -125,10 +161,9 @@ public class NotebookUI {
             );
             splitPane.setDividerLocation(150);
             splitPane.setResizeWeight(0.0);
+            textArea.setComponentPopupMenu(createContextMenu(frame));
 
             frame.add(splitPane, BorderLayout.CENTER);
-
-//            NotebookUIMenu.createMenu(frame);
 
             frame.setVisible(true);
             addShortcuts();
@@ -136,10 +171,40 @@ public class NotebookUI {
         });
     }
 
+    private String getPositionText(JTextPane textArea) {
+        Document doc = textArea.getDocument();
+        Element root = doc.getDefaultRootElement();
+        int caretPos = textArea.getCaretPosition();
+        int line = textArea.getDocument().getDefaultRootElement().getElementIndex(caretPos) + 1;
+        Element lineElement = root.getElement(root.getElementIndex(caretPos));
+        int column = caretPos - lineElement.getStartOffset() + 1;
+        return "Ln:" + line + "  Col:" + column + "  Pos:" + caretPos;
+    }
+
     private void addShortcuts() {
         defineShortCut(KeyEvent.VK_S, NotebookUIModel::saveNote);
         defineShortCut(KeyEvent.VK_N, NotebookUIModel::newNote);
         defineShortCut(KeyEvent.VK_D, NotebookUIModel::deleteNote);
+        defineShortCut(KeyEvent.VK_L, NotebookUIModel::formatNote);
+    }
+
+    private JPopupMenu createContextMenu(JFrame frame) {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem authorItem = new JMenuItem(appConfig.getDialogTitleAuthor());
+        JMenuItem helpItem = new JMenuItem(appConfig.getDialogTitleHelp());
+
+        authorItem.addActionListener(e ->
+                JOptionPane.showMessageDialog(frame,
+                        appConfig.getMessageAuthor(),
+                        appConfig.getDialogTitleAuthor(),
+                        JOptionPane.INFORMATION_MESSAGE));
+        helpItem.addActionListener(e -> JOptionPane.showMessageDialog(frame,
+                appConfig.getMessageHelp(),
+                appConfig.getDialogTitleHelp(),
+                JOptionPane.INFORMATION_MESSAGE));
+        popupMenu.add(authorItem);
+        popupMenu.add(helpItem);
+        return popupMenu;
     }
 
     private void defineShortCut(int keyEvent, Consumer<NotebookUIModel> action) {
@@ -181,9 +246,7 @@ public class NotebookUI {
                     boolean isSelected, boolean cellHasFocus) {
 
                 nameLabel.setText(value.getTitle());
-
                 roleLabel.setText(DateUtil.formatDate(value.getFile().getModificationDate()) + " " + value.getFileName());
-
                 nameLabel.setFont(new Font("Arial", Font.BOLD, 12));
                 roleLabel.setFont(new Font("Arial", Font.PLAIN, 11));
 
@@ -205,7 +268,7 @@ public class NotebookUI {
         titleList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent me) {
                 if (me.getClickCount() == 1) {
-                    JList<Note> target = (JList<Note>)me.getSource();
+                    JList<Note> target = (JList<Note>) me.getSource();
                     int index = target.locationToIndex(me.getPoint());
                     if (index >= 0) {
                         Note note = model.getTitleModel().get(index);
@@ -214,6 +277,7 @@ public class NotebookUI {
                 }
             }
         });
+
         model.setTitleModel(titleModel);
         return titleList;
     }

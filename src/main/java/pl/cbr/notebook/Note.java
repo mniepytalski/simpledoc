@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import pl.cbr.notebook.ui.swing.Keyword;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,14 +18,16 @@ public class Note {
     private String title;
     private Set<String> tags;
     private final boolean newNote;
-
-    private static final int counter = 0;
+    private List<NoteUrl> urls;
+    private final Diary diary;
 
     private Note(FileData file, String title, Set<String> tags, boolean newNote) {
         this.file = file;
         this.title = title;
         this.tags = tags;
         this.newNote = newNote;
+        this.urls = new ArrayList<>();
+        this.diary = new Diary();
     }
 
     public String getTextId() {
@@ -40,6 +44,14 @@ public class Note {
             tags = Keyword.TAG.search(data);
             file.setModificationDate(new Date(System.currentTimeMillis()));
         }
+    }
+
+    public String findUrl(int position) {
+        return urls.stream()
+                .filter(url -> url.getStart() <= position && url.getEnd() > position)
+                .map(NoteUrl::getUrl)
+                .findFirst()
+                .orElse(null);
     }
 
     public String getFileName() {

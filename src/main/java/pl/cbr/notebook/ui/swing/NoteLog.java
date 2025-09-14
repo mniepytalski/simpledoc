@@ -1,5 +1,8 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class NoteLog {
 
     public void info(String message) {

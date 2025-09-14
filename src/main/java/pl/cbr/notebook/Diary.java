@@ -16,7 +16,12 @@ public class Diary {
             change = new DiaryChange(position);
             changes.add(change);
         }
-        change.event(letter, position);
+        try {
+            change.event(letter, position);
+        } catch (StringIndexOutOfBoundsException e) {
+            changes.forEach(ch -> System.out.println(ch.toString()));
+        }
+
     }
 
     private DiaryChange getChange(int position) {

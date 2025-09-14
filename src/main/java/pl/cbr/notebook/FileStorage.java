@@ -1,7 +1,5 @@
 package pl.cbr.notebook;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,7 +12,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.sql.Date;
 
-@Slf4j
+
 public class FileStorage {
 
     public static FileData load(String fileName) {
@@ -61,15 +59,15 @@ public class FileStorage {
         try {
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            System.out.println(e.getMessage() + "," + e);
         }
     }
 
     public static void createDir(String dirName) {
         File dir = new File(dirName);
         if (!exists(dirName)) {
-            dir.mkdir();
-            System.out.println("mkdir: " + dirName);
+            boolean mkdirResult = dir.mkdir();
+            System.out.println("mkdir: " + dirName + ", " + mkdirResult);
         }
     }
 

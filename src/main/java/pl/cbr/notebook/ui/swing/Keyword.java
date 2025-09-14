@@ -5,10 +5,6 @@ import lombok.Getter;
 
 import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -18,14 +14,17 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 public enum Keyword {
-    TAG("#[a-zA-Z]+[a-zA-Z0-9]*", TextStyle.getStyle(Color.ORANGE, true)),
+    TITLE("\\A.*?(?=\\r?\\n|\\z)", TextStyle.titleStyle()),
+    VARIABLE("[\"]{0,1}[a-zA-Z][a-zA-Z0-9-._]{0,50}[\"]{0,1}[ \t]{0,2}[:=]", TextStyle.getStyle(new Color(0, 150, 0), false)),
+    TAG("#[a-zA-Z]+[a-zA-Z0-9]*", TextStyle.getStyle(Color.ORANGE, false)),
+    URL("(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", TextStyle.urlStyle()),
     LIST("(?m)^[ ]{0,5}[a-zA-Z0-9]{1,5}[.)][ \\t\\n]", TextStyle.getStyle(Color.BLACK, true)),
-    URL("(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", TextStyle.getStyle(Color.BLUE, true)),
-    VARIABLE("[\"]{0,1}[a-zA-Z]+[a-zA-Z0-9-._]+[\"]{0,1}[ \t]{0,4}[:=]", TextStyle.getStyle(new Color(0, 150, 0), true)),
-    COMMENT("((?m)^#.*$)|((?m)^.*<!-- .+ -->.*$)", TextStyle.getStyle(Color.GRAY, true)),
-    STRESS("([=]{2,}.)|([-]{3,}.)", TextStyle.getStyle(Color.RED, true)),
-    XML("<[^>]+>", TextStyle.getStyle(new Color(0, 150, 0), true)),
-    NORMAL("^.*$", TextStyle.getStyle(Color.BLACK));
+    COMMENT("((?m)^#[ ]+.*$)|((?m)^.*<!-- .+ -->.*$)", TextStyle.getStyle(Color.GRAY, false)),
+    STRESS("[=]{3,}.", TextStyle.getStyle(Color.RED, true)),
+    STRESS_MINUS("((?m)[-]{3,}.*$)", TextStyle.getStyle(Color.RED, false)),
+    STRESS_PLUS("((?m)[+]{3,}.*$)", TextStyle.getStyle(new Color(0, 150, 0), false)),
+    XML("<[^>]+>", TextStyle.getStyle(new Color(0, 150, 0), false)),
+    CODE("(?s)\\{code:(java|sql)\\}(.*?)\\{code\\}",  TextStyle.getStyle(Color.BLACK));
 
     private final String regexp;
     private final SimpleAttributeSet style;
@@ -34,39 +33,5 @@ public enum Keyword {
         Pattern pattern = Pattern.compile(this.getRegexp());
         Matcher matcher = pattern.matcher(data);
         return matcher.results().map(MatchResult::group).collect(Collectors.toSet());
-    }
-
-    public static List<DocumentPart> analise(String text) {
-        String allKeywords = EnumSet.allOf(Keyword.class)
-                .stream()
-                .filter(keyword -> keyword != NORMAL)
-                .map(Keyword::getRegexp)
-                .map(Keyword::group)
-                .collect(Collectors.joining("|"));
-
-        Pattern pattern = Pattern.compile(allKeywords);
-        Matcher matcher = pattern.matcher(text);
-        List<DocumentPart>  parts = new ArrayList<>();
-        int start = 0;
-        while (matcher.find()) {
-            String normalText = text.substring(start, matcher.start());
-            if (!normalText.isEmpty()) {
-                parts.add(new DocumentPart(normalText, Keyword.NORMAL));
-            }
-            String findText = text.substring(matcher.start(), matcher.end());
-            Optional<Keyword> optional = EnumSet.allOf(Keyword.class).stream().filter(expression -> findText.matches(expression.getRegexp())).findFirst();
-            optional.ifPresent(keyword ->
-                    parts.add(new DocumentPart(findText, keyword)));
-            start = matcher.end();
-        }
-        String endText = text.substring(start);
-        if (!endText.isEmpty()) {
-            parts.add(new DocumentPart(endText, Keyword.NORMAL));
-        }
-        return parts;
-    }
-
-    private static String group(String regexp) {
-        return "(" + regexp + ")";
     }
 }

@@ -2,6 +2,7 @@ package pl.cbr.notebook;
 
 import lombok.Getter;
 import lombok.Setter;
+import pl.cbr.notebook.ui.swing.MarkedDocument;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ public class Notebook {
     private final List<Note> notes;
     @Setter
     private Note actualNote;
+    private MarkedDocument markedDocument;
 
     public Notebook() {
         FileStorage.createDir(StorageConfig.CURRENT_DIR);
@@ -22,6 +24,7 @@ public class Notebook {
                         .compareTo(o1.getFile().getModificationDate()))
                 .collect(Collectors.toList());
         actualNote = Note.of(FileData.empty());
+        markedDocument = new MarkedDocument();
     }
 
     public List<Note> sortedNotes() {

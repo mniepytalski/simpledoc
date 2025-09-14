@@ -1,47 +1,36 @@
 package pl.cbr.notebook.ui.swing;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
+import pl.cbr.notebook.utils.JsonSimpleFormatter;
 
 import javax.swing.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@Data
 public class NotebookUIModel {
 
-    @Getter
     private final Notebook notebook;
-
-    @Setter
-    @Getter
     private JTextPane textArea;
-
-    @Getter
-    @Setter
     private DefaultListModel<Note> titleModel;
-
-    @Getter
-    @Setter
     JTextField searchField;
+    private boolean urlStyleChanged = false;
 
-    private final NoteLog log;
 
     public NotebookUIModel() {
         this.notebook = new Notebook();
-        log = new NoteLog();
     }
 
     public void newNote() {
-        log.info("new");
+        NoteLog.info("new");
         cleanNoteWindow();
     }
 
     public void deleteNote() {
         Note actualNote = notebook.getActualNote();
-        log.info("delete: {}", actualNote.getFileName());
+        NoteLog.info("delete: {}", actualNote.getFileName());
         if (actualNote.getFileName() != null) {
             notebook.delete(actualNote);
         }
@@ -74,7 +63,13 @@ public class NotebookUIModel {
         }
         notebook.getActualNote().setTitle(notebook.getNoteTitle(textArea.getText()));
         recreateList(searchNoteByText(searchField.getText()));
-        log.info("save: {}", note.getFileName());
+        NoteLog.info("save: {}", note.getFileName());
+    }
+
+    public void formatNote() {
+        textArea.replaceSelection(JsonSimpleFormatter.format(notebook.getMarkedDocument().getText()));
+        notebook.getActualNote().setData(textArea.getText());
+        notebook.getMarkedDocument().clear();
     }
 
     public List<Note> searchNote(String searchText) {
