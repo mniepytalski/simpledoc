@@ -12,16 +12,12 @@ public class JsonSimpleFormatter {
 
             switch (c) {
                 case '"':
-                    // sprawdzamy, czy cudzysłów nie jest poprzedzony przez '\'
-                    boolean escaped = i > 0 && json.charAt(i - 1) == '\\';
-                    if (!escaped) {
+                    if (!checkBeckSlashBefore(i, json)) {
                         inQuotes = !inQuotes;
                     }
                     formatted.append(c);
                     break;
-
-                case '{':
-                case '[':
+                case '{' | '[':
                     formatted.append(c);
                     if (!inQuotes) {
                         formatted.append("\n");
@@ -29,19 +25,14 @@ public class JsonSimpleFormatter {
                         appendIndent(formatted, indent);
                     }
                     break;
-
-                case '}':
-                case ']':
+                case '}' | ']':
                     if (!inQuotes) {
                         formatted.append("\n");
                         indent--;
                         appendIndent(formatted, indent);
-                        formatted.append(c);
-                    } else {
-                        formatted.append(c);
                     }
+                    formatted.append(c);
                     break;
-
                 case ',':
                     formatted.append(c);
                     if (!inQuotes) {
@@ -49,21 +40,24 @@ public class JsonSimpleFormatter {
                         appendIndent(formatted, indent);
                     }
                     break;
-
                 case ':':
                     formatted.append(c);
                     if (!inQuotes) {
                         formatted.append(" ");
                     }
                     break;
-
                 default:
                     formatted.append(c);
                     break;
             }
         }
-//        return formatted.toString();
-        return formatted.toString().replaceAll("([ \\t]*\\r?\\n)+", "\n");
+        return formatted.toString()
+                .replaceAll(":[ ]+", ": ")
+                .replaceAll("([ \\t]*\\r?\\n)+", "\n");
+    }
+
+    private static boolean checkBeckSlashBefore(int i, String json) {
+        return i > 0 && json.charAt(i - 1) == '\\';
     }
 
     private static void appendIndent(StringBuilder sb, int indent) {

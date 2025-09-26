@@ -14,7 +14,7 @@ public class Notebook {
     private final List<Note> notes;
     @Setter
     private Note actualNote;
-    private MarkedDocument markedDocument;
+    private final MarkedDocument markedDocument;
 
     public Notebook() {
         FileStorage.createDir(StorageConfig.CURRENT_DIR);

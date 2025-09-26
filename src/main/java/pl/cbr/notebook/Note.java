@@ -2,6 +2,7 @@ package pl.cbr.notebook;
 
 import lombok.Getter;
 import lombok.Setter;
+import pl.cbr.notebook.diary.Diary;
 import pl.cbr.notebook.ui.swing.Keyword;
 
 import java.util.ArrayList;

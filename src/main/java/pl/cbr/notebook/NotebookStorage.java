@@ -19,6 +19,10 @@ public class NotebookStorage {
     }
 
     public static void save(Note note) {
+        note.getDiary().toLogger();
+        System.out.println("=========================================");
+        System.out.println("Saving note:\n" + note.getData());
+        System.out.println("=========================================");
         FileStorage.save(note.getFileName(), note.getData().replaceAll("\r+\n", "\r\n"));
     }
 

@@ -1,8 +1,10 @@
 package pl.cbr.notebook.ui.swing;
 
+import pl.cbr.notebook.Config;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
 import pl.cbr.notebook.utils.DateUtil;
+import pl.cbr.notebook.utils.SelectedTextUtil;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -13,15 +15,23 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class NotebookUI {
     private final NotebookUIModel model;
 
     private static final int APP_WIDTH = 700;
     private static final int APP_HEIGHT = 500;
+
+    private static boolean panelVisible =  true;
+    private static int rightPanelWidth = 0;
+    private static int rightPanelHeight = 0;
+    private static int frameWidth = 0;
 
     private final AppConfig appConfig;
 
@@ -38,7 +48,7 @@ public class NotebookUI {
     private void createUi() {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(appConfig.getTitle());
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.setSize(APP_WIDTH, APP_HEIGHT);
 
             JPanel leftPanel = new JPanel(new BorderLayout());
@@ -50,6 +60,10 @@ public class NotebookUI {
 
             JPanel topLeftPanel = new JPanel();
             topLeftPanel.setLayout(new BoxLayout(topLeftPanel, BoxLayout.X_AXIS));
+
+            JButton detailsButton = getDetailsButton();
+            topLeftPanel.add(detailsButton, BorderLayout.EAST);
+
             JButton newButton = new JButton(appConfig.getButtonNew());
             newButton.addActionListener(e -> model.newNote());
             topLeftPanel.add(newButton);
@@ -67,27 +81,43 @@ public class NotebookUI {
             JTextPane textArea = new JTextPane();
             model.setTextArea(textArea);
 
+            int selectionStart = textArea.getSelectionStart();
             textArea.addKeyListener(new KeyListener() {
                 @Override
                 public void keyTyped(KeyEvent e) {
-//                    Diary diary = model.getNotebook().getActualNote().getDiary();
-//                    diary.event(e.getKeyChar(), textArea.getCaretPosition());
                 }
 
                 @Override
                 public void keyPressed(KeyEvent e) {
+                    if (SelectedTextUtil.checkIsCursor(e)) {
+                        model.calculateDiffWithUpdate();
+                    }
+                    if (e.isMetaDown() || e.isControlDown()) {
+                        return;
+                    }
 
+                    String sel = textArea.getSelectedText();
+                    if (sel != null && !sel.isEmpty()) {
+                        if (SelectedTextUtil.check(e)) {
+                            String oldText = model.getTextArea().getText();
+                            String newText = SelectedTextUtil.modifyText(e, model.getTextArea());
+                            model.calculateDiff(oldText, newText);
+                        }
+                    } else {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            model.calculateDiffWithUpdate();
+                        }
+                    }
                 }
 
                 @Override
                 public void keyReleased(KeyEvent e) {
-
                 }
             });
             Label positionLabel = new Label(getPositionText(textArea));
             textArea.addCaretListener(e -> {
                 positionLabel.setText(getPositionText(textArea));
-                int start = textArea.getSelectionStart();
+                int start = selectionStart;
                 int end = textArea.getSelectionEnd();
                 String selected = textArea.getSelectedText();
 
@@ -100,6 +130,7 @@ public class NotebookUI {
             textArea.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                    model.calculateDiffWithUpdate();
                     int pos = textArea.viewToModel2D(e.getPoint());
                     String url = model.getNotebook().getActualNote().findUrl(pos);
                     if (url != null) {
@@ -136,6 +167,16 @@ public class NotebookUI {
                 }
             });
 
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    model.saveNote();
+                    Config.save();
+                    frame.dispose();
+                    NoteLog.info("closed");
+                }
+            });
+
             DocumentArea.dynamicDocumentStyle(textArea, searchField, model.getNotebook());
 
             JScrollPane scrollPane = new JScrollPane(textArea);
@@ -165,10 +206,68 @@ public class NotebookUI {
 
             frame.add(splitPane, BorderLayout.CENTER);
 
+
+            detailsButton.addActionListener(e -> {
+                panelVisible = !panelVisible;
+                leftPanel.setVisible(panelVisible);
+                splitPane.setDividerLocation(150);
+                splitPane.setResizeWeight(0.0);
+                splitPane.revalidate();
+            });
+
+
             frame.setVisible(true);
             addShortcuts();
+
+            // Custom COPY
+            KeyStroke keyStrokeC = KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            textArea.getInputMap().put(keyStrokeC, "copy");
+            textArea.getActionMap().put("copy", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    model.copyTextToClipboard(e);
+                }
+            });
+
+            // Custom PASTE
+            KeyStroke keyStrokeV = KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            textArea.getInputMap().put(keyStrokeV, "paste");
+            textArea.getActionMap().put("paste", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    model.insertFromClipboard(e);
+                }
+            });
             model.cleanNoteWindow();
         });
+    }
+
+    private JButton getDetailsButton() {
+        Icon squareIcon = new Icon() {
+            private final int size = 20;
+
+            @Override
+            public int getIconWidth() { return size; }
+
+            @Override
+            public int getIconHeight() { return size; }
+
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                int yMargin = 3;
+                g.setColor(Color.BLACK);
+                g.drawRect(x, y + yMargin, size, size - yMargin * 2);
+                g.drawRect(x, y + yMargin, size / 3, size - yMargin * 2);
+                IntStream.range(2, 6).forEach(i ->
+                    g.drawLine(x, y + yMargin * i, x + size / 3, y + yMargin * i)
+                );
+            }
+        };
+
+        JButton detailsButton = new JButton(squareIcon);
+        detailsButton.setPreferredSize(new Dimension(28, 28)); // kwadratowy przycisk
+        detailsButton.setFocusPainted(false);
+        detailsButton.setBorder(BorderFactory.createEmptyBorder());
+        detailsButton.setContentAreaFilled(false);
+        return detailsButton;
     }
 
     private String getPositionText(JTextPane textArea) {
@@ -186,6 +285,8 @@ public class NotebookUI {
         defineShortCut(KeyEvent.VK_N, NotebookUIModel::newNote);
         defineShortCut(KeyEvent.VK_D, NotebookUIModel::deleteNote);
         defineShortCut(KeyEvent.VK_L, NotebookUIModel::formatNote);
+        defineShortCut(KeyEvent.VK_Z, NotebookUIModel::rollbackNote);
+        defineShortCut(KeyEvent.VK_P, NotebookUIModel::dumpChanges);
     }
 
     private JPopupMenu createContextMenu(JFrame frame) {

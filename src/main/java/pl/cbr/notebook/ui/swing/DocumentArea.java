@@ -70,7 +70,7 @@ public class DocumentArea {
                                     addUrlToList(m1, note, doc);
                                 }
                                 if (keyword == Keyword.CODE) {
-                                    CodeKeyword.codeAnalyzer(m1, doc, textArea.getText());
+                                    CodeKeyword.codeAnalyzer(m1, doc, text);
                                 }
                             }
                         });

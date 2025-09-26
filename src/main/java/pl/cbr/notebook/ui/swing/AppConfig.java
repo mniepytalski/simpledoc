@@ -5,12 +5,13 @@ import lombok.Getter;
 @Getter
 public class AppConfig {
 
-    private final String title = "Simpledoc v2.2";
+    private final String title = "Simpledoc v2.3.2";
 
-    private final String messageAuthor = "Notebook @2025\nAutor: Mariusz Niepytalski\nEmail: mniepytalski@icloud.com";
+    private final String messageAuthor = "Notebook @2025\nAuthor: Mariusz Niepytalski\nEmail: mniepytalski@icloud.com";
 
     private final String messageHelp = "Help\nCTRL+S - save\nCTRL+D - delete\nCTRL+N - new\nCTRL+L - format selected text, only json"
-            + "\nCTRL+C - copy selected text\nCTRL+V - paste selected text\nCTRL+X - copy and delete selected text";
+            + "\nCTRL+C - copy selected text\nCTRL+V - paste selected text\nCTRL+X - copy and delete selected text"
+            + "\nCTRL+Z - rollback last changes";
 
     private final String dialogTitleHelp = "Help";
 

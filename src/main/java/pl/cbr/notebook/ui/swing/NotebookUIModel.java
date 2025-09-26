@@ -1,11 +1,20 @@
 package pl.cbr.notebook.ui.swing;
 
 import lombok.Data;
+import pl.cbr.notebook.Config;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
+import pl.cbr.notebook.diary.Diary;
+import pl.cbr.notebook.diary.DiaryChange;
+import pl.cbr.notebook.diary.MyersDiff;
 import pl.cbr.notebook.utils.JsonSimpleFormatter;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +30,7 @@ public class NotebookUIModel {
 
     public NotebookUIModel() {
         this.notebook = new Notebook();
+        Config.set("time", "" + System.currentTimeMillis());
     }
 
     public void newNote() {
@@ -66,10 +76,78 @@ public class NotebookUIModel {
         NoteLog.info("save: {}", note.getFileName());
     }
 
+    public boolean calculateDiff() {
+        return calculateDiff(getNotebook().getActualNote().getData(), getTextArea().getText());
+    }
+
+    public void calculateDiffWithUpdate() {
+        if (calculateDiff()) {
+            updateTextArea();
+        }
+    }
+
+    public boolean calculateDiff(String oldText, String newText) {
+        String diff = MyersDiff.diff(oldText, newText);
+        if (diff.isEmpty()) {
+            return false;
+        }
+        Diary diary = getNotebook().getActualNote().getDiary();
+        diary.addDiff(diff);
+        return true;
+    }
+
+    public void updateTextArea() {
+        getNotebook().getActualNote().setData(getTextArea().getText());
+    }
+
+    public void copyTextToClipboard(ActionEvent e) {
+        String text = textArea.getSelectedText();
+        Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new StringSelection(text), null);
+        System.out.println("Copied: " + text);
+    }
+
+    public void insertFromClipboard(ActionEvent e) {
+        try {
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            String pasteText = (String) clipboard.getData(DataFlavor.stringFlavor);
+            String oldText = textArea.getText();
+            textArea.replaceSelection(pasteText);
+            calculateDiff(oldText, textArea.getText());
+            System.out.println("Pasted: " + pasteText);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void formatNote() {
+        String oldText = textArea.getText();
         textArea.replaceSelection(JsonSimpleFormatter.format(notebook.getMarkedDocument().getText()));
+        calculateDiff(oldText, textArea.getText());
         notebook.getActualNote().setData(textArea.getText());
         notebook.getMarkedDocument().clear();
+    }
+
+    public void rollbackNote() {
+        calculateDiffWithUpdate();
+        Diary diary = notebook.getActualNote().getDiary();
+        if (!diary.getChanges().isEmpty()) {
+            DiaryChange change = diary.getChanges().remove(diary.getChanges().size() - 1);
+            System.out.println("==============");
+            System.out.println("diff:\n" + change.getChange());
+            System.out.println("--------------");
+            System.out.println("input:\n" + textArea.getText());
+            System.out.println("--------------");
+            String reversed = MyersDiff.reverseApply(textArea.getText(), change.getChange());
+            System.out.println("reverse changed:\n" + reversed);
+            textArea.setText(reversed);
+            notebook.getActualNote().setData(textArea.getText());
+        }
+    }
+
+    public void dumpChanges() {
+        Diary diary = notebook.getActualNote().getDiary();
+        diary.toLogger();
     }
 
     public List<Note> searchNote(String searchText) {

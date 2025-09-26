@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +19,7 @@ public class FileStorage {
     public static FileData load(String fileName) {
         String fileLocation = getFileLocation(fileName);
         Date modificationDate = getModificationDate(fileLocation);
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation, StandardCharsets.UTF_8))) {
             String line;
             StringBuilder stringBuilder = new StringBuilder();
             String ls = System.lineSeparator();
@@ -35,7 +36,9 @@ public class FileStorage {
     public static boolean save(String fileName, String data) {
         String fileLocation = getFileLocation(fileName);
         try (FileOutputStream outputStream = new FileOutputStream(fileLocation)) {
-            outputStream.write(data.getBytes());
+            outputStream.write(data
+//                    .replaceAll("\n+", "\n")
+                    .getBytes(StandardCharsets.UTF_8));
             return true;
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);

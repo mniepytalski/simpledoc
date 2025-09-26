@@ -22,13 +22,13 @@ public enum CodeKeyword {
     ),
     JAVA("java",
             Set.of(
-                    CodeBlock.of(1, "\"([^\"\\\\]|\\\\.)*\"", TextStyle.getStyle(new Color(0, 120, 0, 255))),
-                    CodeBlock.of(2, "(?<!\")//.*|(?<!\")/\\*[\\s\\S]*?\\*/", TextStyle.getStyle(Color.GRAY)),
-                    CodeBlock.of(3, "(?i)\\b(VOID|PUBLIC|PRIVATE|FINAL|NEW|PACKAGE|IMPORT|ENUM|THIS|SUPER|INT|STATIC|WHILE|FOR|FALSE)\\b",TextStyle.getStyle(new Color(200, 112, 10, 255))),
+                    CodeBlock.of(1, "(?<!\")//.*|(?<!\")/\\*[\\s\\S]*?\\*/", TextStyle.getStyle(Color.GRAY)),
+                    CodeBlock.of(2, "'.'|\"([^\"\\\\]|\\\\.)*\"", TextStyle.getStyle(new Color(0, 120, 0, 255))),
+                    CodeBlock.of(3, "(?i)\\b(VOID|PUBLIC|PRIVATE|FINAL|NEW|PACKAGE|IMPORT|ENUM|THIS|SUPER|INT|DOUBLE|FLOAT|CHAR|STATIC|WHILE|FOR|FALSE|CASE|SWITCH|BREAK|RETURN|GOTO|IF|ELSE|THROW|TRY|CATCH|BOOLEAN|CLASS|INTERFACE|NULL|FINALLY)\\b",TextStyle.getStyle(new Color(200, 112, 10, 255))),
                     CodeBlock.of(4, "@[a-zA-Z]+", TextStyle.getStyle(new Color(211, 186, 29, 255))),
-                    CodeBlock.of(5, " [a-zA-Z0-9]+\\(", TextStyle.getStyle(new Color(14, 98, 225, 255))),
-                    CodeBlock.of(6, "(?<=[. (])[.0-9XA-F]+(?=[;, )])", TextStyle.getStyle(new Color(24, 157, 228, 255))),
-                    CodeBlock.of(7, "(?<=[,. (])[A-Z][A-Z0-9_]*(?=[,; )])", TextStyle.getStyle(new Color(177, 16, 177, 255)))
+                    CodeBlock.of(5, " [a-zA-Z0-9][a-zA-Z0-9_]*\\(", TextStyle.getStyle(new Color(14, 98, 225, 255))),
+                    CodeBlock.of(6, "(?<=[. (\\[])[.0-9XA-F]+(?=[;, \\])])", TextStyle.getStyle(new Color(24, 157, 228, 255))),
+                    CodeBlock.of(7, "(?<=[,. (])[A-Z][A-Z0-9_]*(?=[,; )])| [a-zA-Z][a-zA-Z0-9_]+[;]", TextStyle.getStyle(new Color(177, 16, 177, 255)))
             )
     );
 
