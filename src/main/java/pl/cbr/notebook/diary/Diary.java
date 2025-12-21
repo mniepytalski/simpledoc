@@ -36,5 +36,4 @@ public class Diary {
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
     }
-
 }

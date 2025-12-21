@@ -8,6 +8,7 @@ import pl.cbr.notebook.diary.Diary;
 import pl.cbr.notebook.diary.DiaryChange;
 import pl.cbr.notebook.diary.MyersDiff;
 import pl.cbr.notebook.utils.JsonSimpleFormatter;
+import pl.cbr.notebook.utils.StringUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,7 @@ public class NotebookUIModel {
 
     private final Notebook notebook;
     private JTextPane textArea;
+    private JList<Note> listOfTitles;
     private DefaultListModel<Note> titleModel;
     JTextField searchField;
     private boolean urlStyleChanged = false;
@@ -166,15 +168,30 @@ public class NotebookUIModel {
                 .collect(Collectors.toList());
     }
 
+    public void setNoteFromInternalLink(String internalLink) {
+        Note noteForTitle = getNotebook().loadByTitle(internalLink);
+        System.out.println("Try to open internal URL: " + internalLink +" found: " + noteForTitle.getTitle());
+        if (noteForTitle.getTitle() != null) {
+            for (int i = 0; i < listOfTitles.getModel().getSize(); i++ ) {
+                if (noteForTitle.getTextId().equals(listOfTitles.getModel().getElementAt(i).getTextId()) ) {
+                    listOfTitles.setSelectedIndex(i);
+                    setNoteFromTextId(noteForTitle.getTextId());
+                    break;
+                }
+            }
+        }
+    }
+
     public void setNoteFromTextId(String textId) {
         Note note = notebook.loadByTextId(textId);
+        notebook.setActualNote(note);
         DocumentArea.print(note, textArea, searchField);
         textArea.grabFocus();
     }
 
     public void cleanNoteWindow() {
         notebook.setActualNote(Note.empty());
-        textArea.setText("");
+        textArea.setText(StringUtil.EMPTY);
         textArea.grabFocus();
     }
 

@@ -9,6 +9,7 @@ public class NoteUrl {
     private final int start;
     private final int end;
     private final String url;
+    private final NoteUrlType type;
 
     public int getLength() {
         return end - start;

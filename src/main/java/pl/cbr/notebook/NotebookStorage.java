@@ -19,16 +19,14 @@ public class NotebookStorage {
     }
 
     public static void save(Note note) {
-        note.getDiary().toLogger();
-        System.out.println("=========================================");
-        System.out.println("Saving note:\n" + note.getData());
-        System.out.println("=========================================");
         FileStorage.save(note.getFileName(), note.getData().replaceAll("\r+\n", "\r\n"));
     }
 
     public static void copyToBackup(Note note, String operation) {
         String prefix = DateUtil.format(new Date(System.currentTimeMillis()), "yyyyMMdd_HHmmss_");
-        FileStorage.copyToBackup(note.getFileName(), StorageConfig.BACKUP_DIR + prefix + note.getFileName());
+        String sourceLocation = FileStorage.getFileDataLocation(note.getFileName());
+        String targetLocation = FileStorage.getFileDataLocation(StorageConfig.BACKUP_DIR + prefix + note.getFileName());
+        FileStorage.copy(sourceLocation, targetLocation);
     }
 
     public static void delete(Note note) {

@@ -1,23 +1,21 @@
 package pl.cbr.notebook.diary;
 
+import pl.cbr.notebook.utils.StringUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiffUtils {
 
-    static final String LINE_BREAK = "\n";
-    static final String COLON = ":";
-    static final String EMPTY_STRING = "";
-
     public static String changesToString(List<DiffOp> ops) {
         StringBuilder sb = new StringBuilder();
         for (DiffOp op : ops) {
             sb.append(op.getLineNumber())
-                    .append(COLON)
+                    .append(StringUtil.COLON)
                     .append(op.getType().getValue())
-                    .append(COLON)
+                    .append(StringUtil.COLON)
                     .append(escape(op.getContent()))
-                    .append(LINE_BREAK);
+                    .append(StringUtil.ENTER);
         }
         return sb.toString();
     }
@@ -26,10 +24,10 @@ public class DiffUtils {
     public static List<DiffOp> changesFromString(String text) {
         List<DiffOp> ops = new ArrayList<>();
 
-        for (String line : text.split(LINE_BREAK)) {
+        for (String line : text.split(StringUtil.ENTER)) {
             if (line.trim().isEmpty()) continue;
 
-            String[] parts = line.split(COLON, 3);
+            String[] parts = line.split(StringUtil.COLON, 3);
             int lineNum = Integer.parseInt(parts[0].trim());
 
             String sign = parts[1].trim();   // "+", "-", "+ :", "- :" etc.
@@ -47,13 +45,13 @@ public class DiffUtils {
     }
 
     private static String unescape(String s) {
-        return s.replace("\\n", LINE_BREAK)
+        return s.replace("\\n", StringUtil.ENTER)
                 .replace("\\\\", "\\");
     }
 
     private static String escape(String s) {
-        if (s == null) return EMPTY_STRING;
+        if (s == null) return StringUtil.EMPTY;
         return s.replace("\\", "\\\\")
-                .replace(LINE_BREAK, "\\n");
+                .replace(StringUtil.ENTER, "\\n");
     }
 }

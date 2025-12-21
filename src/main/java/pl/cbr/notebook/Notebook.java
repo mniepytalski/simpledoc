@@ -3,6 +3,7 @@ package pl.cbr.notebook;
 import lombok.Getter;
 import lombok.Setter;
 import pl.cbr.notebook.ui.swing.MarkedDocument;
+import pl.cbr.notebook.utils.StringUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,9 @@ public class Notebook {
     public Notebook() {
         FileStorage.createDir(StorageConfig.CURRENT_DIR);
         FileStorage.createDir(StorageConfig.CURRENT_DIR + StorageConfig.BACKUP_DIR);
+
+
+        FileStorage.copyFromResource("/Info.txt", FileStorage.getFileDataLocation("Info.txt"));
         notes = NotebookStorage.getAll().stream()
                 .sorted((o1, o2) -> o2.getFile().getModificationDate()
                         .compareTo(o1.getFile().getModificationDate()))
@@ -50,6 +54,7 @@ public class Notebook {
     }
 
     public void delete(Note note) {
+        notes.remove(note);
         NotebookStorage.copyToBackup(note, "delete");
         NotebookStorage.delete(note);
         actualNote = Note.empty();
@@ -79,6 +84,12 @@ public class Notebook {
         return actualNote;
     }
 
+    public Note loadByTitle(String title) {
+        Optional<Note> note = notes.stream().filter(n -> n.getTitle().equalsIgnoreCase(title)).findFirst();
+        actualNote = note.orElseGet(Note::empty);
+        return actualNote;
+    }
+
     public String getNoteTitle(String data) {
         return getNoteTitleFromData(data);
     }
@@ -88,7 +99,7 @@ public class Notebook {
         if (lines.length >= 1) {
             return lines[0].trim();
         } else {
-            return "";
+            return StringUtil.EMPTY;
         }
     }
 }

@@ -1,5 +1,7 @@
 package pl.cbr.notebook.diary;
 
+import pl.cbr.notebook.utils.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,13 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static pl.cbr.notebook.diary.DiffUtils.LINE_BREAK;
 
 public class MyersDiff {
 
     public static String diff(String fileA, String fileB) {
-        List<String> a = Arrays.stream(fileA.split(LINE_BREAK)).collect(Collectors.toList());
-        List<String> b = Arrays.stream(fileB.split(LINE_BREAK)).collect(Collectors.toList());
+        List<String> a = Arrays.stream(fileA.split(StringUtil.ENTER)).collect(Collectors.toList());
+        List<String> b = Arrays.stream(fileB.split(StringUtil.ENTER)).collect(Collectors.toList());
         return DiffUtils.changesToString(diff(a, b));
     }
 
@@ -89,15 +90,15 @@ public class MyersDiff {
     }
 
     public static String apply(String oldText, String diffOps) {
-        return String.join(LINE_BREAK, apply(oldText, diffOps, false));
+        return String.join(StringUtil.ENTER, apply(oldText, diffOps, false));
     }
 
     public static String reverseApply(String oldText, String diffOps) {
-        return String.join(LINE_BREAK, apply(oldText, diffOps, true));
+        return String.join(StringUtil.ENTER, apply(oldText, diffOps, true));
     }
 
     private static List<String> apply(String oldText, String diffOps, boolean reverse) {
-        List<String> text = Arrays.stream(oldText.split(LINE_BREAK)).collect(Collectors.toList());
+        List<String> text = Arrays.stream(oldText.split(StringUtil.ENTER)).collect(Collectors.toList());
         List<DiffOp> diff = DiffUtils.changesFromString(diffOps);
         List<String> copyOfOldText = new ArrayList<>(text);
         List<DiffOp> changes = new ArrayList<>(diff);

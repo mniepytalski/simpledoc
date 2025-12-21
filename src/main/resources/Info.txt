@@ -1,0 +1,211 @@
+Info
+
+----------------------------------
+**Tagi**
+#tag1 #tag2
+
+
+
+----------------------------------
+**Stylowanie**
+
+1. Italic
+*To jest tytuł*
+
+2. Bold
+**To jest tytuł**
+
+3. Italic i bold
+***To jest tytuł***
+
+4. Wyróżnienie "cytat"
+> test 
+
+5. Paragrafy
+## Paragraph2
+### Paragraph3
+#### Paragraph4
+
+----------------------------------
+**Automatyczne kolorowanie**
+
+1.
+++
++++
+++++++++++++
++++ Test
+
+2.
+--
+---
+---------------
+--- Test
+
+3.
+===
+====
+============
+==== Test
+
+**Automatyczne kolorowanie bloków**
+
+1. *XML*
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>pl.cbr</groupId>
+    <artifactId>simpledoc</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lombok.version>1.18.38</lombok.version>
+    </properties>
+
+2. *JSON*
+{
+  "status": "ok",
+  "account_id": 19096,
+  "site_id": 267342,
+  "zone_id": 3161096,
+  "size_id": 79,
+  "tracking": "",
+  "inventory": {
+    "page": "https://www.wp.pl/",
+    "documentLang": "pl",
+    "domain": "wp.pl"
+    },
+  "ads": [
+         {
+    "status": "no-ads",
+    "reason": "no-compatible-ads",
+    "error_code": "10",
+    "impression_id": "5535d0ca-8e31-4d9c-a8ad-ee3648a14597"
+    }
+    ]
+}
+
+3. *YAML*
+spring:
+  profiles:
+    active: prod
+
+game:
+  width: 640
+  height: 480
+  dot-size: 10
+  dots-on-start: 3
+  lattice: false
+  apples: 4
+
+  players:
+    - name: Mario1
+      position:
+        x: 5
+        y: 5
+      control:
+        left: VK_LEFT
+        right: VK_RIGHT
+        up: VK_UP
+        down: VK_DOWN
+#    - name: Michal
+#      position:
+#        x: 2
+#        y: 2
+#      control:
+#        left: VK_A
+#        right: VK_D
+#        up: VK_W
+#        down: VK_S
+
+
+----------------------------------
+**Sekcja code**
+
+1.
+{code:java}
+package pl.cbr.notebook.ui.swing;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import javax.swing.text.SimpleAttributeSet;
+
+@RequiredArgsConstructor(staticName = "of")
+@Getter
+public class CodeBlock implements Comparable<CodeBlock> {
+    private final Integer id;
+    private final String regExp;
+    private final SimpleAttributeSet style;
+
+    @Override
+    public int compareTo(CodeBlock codeBlock) {
+        return codeBlock.getId().compareTo(getId());
+    }
+}
+{code}
+
+2.
+{code:sql}
+select * from table1;
+-- select * from table2;
+{code}
+
+----------------------------------
+**Komentarze**
+# na pierwszej pozycji i za nim spacja oznacza komentarz do kondca linii
+
+----------------------------------
+**Listy i numerowanie**
+
+Umieszczajac na pozycjach od 0 do 5 cyfry, litery zakończone kropa lub ) i spacja automatycznie robimy listę.
+To oznacza, że numeracja listy automatycznie się pogrubia
+
+1. test
+2. list
+4. test
+ a. testa
+ b. testb
+5. Blyskawica
+6) test
+
+----------------------------------
+**Inne alfabety**
+
+Przykłady
+1. asdfsda
+2. żźć
+3.それは良い
+4. Это хорошо
+
+----------------------------------
+**Linki**
+
+1. Zewnętrzne
+umieszczając w teście prawidłowy link np
+https://www.wp.pl
+automatycznie umieszczamy go na liście linków.
+Klikając na niego na stronie automatynie przechodzimy do tej strony w standardowej przeglądarce
+
+2. Wewnętrzne
+można umieścić link do innej notatki wpisując jej tytuł w podwójnym nawiasie
+((TST1))
+Kliknięcie na takiego linka automatycznie przeniesie nas do tej notatki
+
+----------------------------------
+**Formatowanie json**
+
+Blok json możemy automatycznie sformatować
+{"t1" : 1,"t2" : 2,"t3" : 2}
+zaznaczając go i używając skrótu CTRL+L
+{
+    "t1": 1,
+    "t2": 2,
+    "t3": 2
+}

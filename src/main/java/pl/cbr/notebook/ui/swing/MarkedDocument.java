@@ -1,6 +1,7 @@
 package pl.cbr.notebook.ui.swing;
 
 import lombok.Data;
+import pl.cbr.notebook.utils.StringUtil;
 
 @Data
 public class MarkedDocument {
@@ -21,6 +22,6 @@ public class MarkedDocument {
     public void clear() {
         start = 0;
         end = 0;
-        text = "";
+        text = StringUtil.EMPTY;
     }
 }

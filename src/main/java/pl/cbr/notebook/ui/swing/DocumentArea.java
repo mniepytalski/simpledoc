@@ -2,7 +2,9 @@ package pl.cbr.notebook.ui.swing;
 
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.NoteUrl;
+import pl.cbr.notebook.NoteUrlType;
 import pl.cbr.notebook.Notebook;
+import pl.cbr.notebook.utils.StringUtil;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
@@ -22,20 +24,20 @@ public class DocumentArea {
 
     public static void print(Note note, JTextPane textArea, JTextField searchField) {
         StyledDocument doc = textArea.getStyledDocument();
-        textArea.setText("");
+        textArea.setText(StringUtil.EMPTY);
         String searchText = searchField.getText().trim();
         try {
             if (searchText.isEmpty()) {
                 note.getUrls().clear();
                 textArea.setText(note.getData());
             } else {
-                SimpleAttributeSet highlight = TextStyle.getStyle(Color.BLUE, true);
+                SimpleAttributeSet highlight = TextStyle.getWithForeground(Color.BLUE, true);
                 String[] strings = note.getData().split(getRegexp(searchText));
                 for (String string : strings) {
                     if (string.equalsIgnoreCase(searchText)) {
                         doc.insertString(doc.getLength(), string, highlight);
                     } else {
-                        doc.insertString(doc.getLength(), string, TextStyle.getStyle(Color.BLACK));
+                        doc.insertString(doc.getLength(), string, TextStyle.getWithForeground(Color.BLACK));
                     }
                 }
             }
@@ -65,9 +67,9 @@ public class DocumentArea {
                             Pattern pattern = Pattern.compile(keyword.getRegexp());
                             Matcher m1 = pattern.matcher(text);
                             while (m1.find()) {
-                                doc.setCharacterAttributes(m1.start(), m1.end() - m1.start(), keyword.getStyle(), true);
-                                if (keyword == Keyword.URL) {
-                                    addUrlToList(m1, note, doc);
+                                doc.setCharacterAttributes(m1.start(), m1.end() - m1.start(), keyword.getStyle(), keyword.isReplace());
+                                if (keyword == Keyword.URL || keyword == Keyword.INTERNAL_URL) {
+                                    addUrlToList(m1, note, doc, keyword);
                                 }
                                 if (keyword == Keyword.CODE) {
                                     CodeKeyword.codeAnalyzer(m1, doc, text);
@@ -112,10 +114,16 @@ public class DocumentArea {
         });
     }
 
-    private static void addUrlToList(Matcher m1, Note note, StyledDocument doc) {
+    private static void addUrlToList(Matcher m1, Note note, StyledDocument doc, Keyword keyword) {
+        NoteUrlType urlType = keyword ==  Keyword.INTERNAL_URL ? NoteUrlType.INTERNAL : NoteUrlType.EXTERNAL;
         try {
             String url = doc.getText(m1.start(), m1.end() - m1.start());
-            note.getUrls().add(NoteUrl.of(m1.start(), m1.end(), url));
+            if (keyword == Keyword.INTERNAL_URL) {
+                if (url.length() > 4) {
+                    url = url.substring(2, url.length() - 2);
+                }
+            }
+            note.getUrls().add(NoteUrl.of(m1.start(), m1.end(), url, urlType));
         } catch (BadLocationException e) {
             throw new RuntimeException(e);
         }

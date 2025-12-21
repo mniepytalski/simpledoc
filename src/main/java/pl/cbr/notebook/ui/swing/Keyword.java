@@ -14,20 +14,29 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 public enum Keyword {
-    TITLE("\\A.*?(?=\\r?\\n|\\z)", TextStyle.titleStyle()),
-    VARIABLE("[\"]{0,1}[a-zA-Z][a-zA-Z0-9-._]{0,50}[\"]{0,1}[ \t]{0,2}[:=]", TextStyle.getStyle(new Color(0, 150, 0), false)),
-    TAG("#[a-zA-Z]+[a-zA-Z0-9]*", TextStyle.getStyle(Color.ORANGE, false)),
-    URL("(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", TextStyle.urlStyle()),
-    LIST("(?m)^[ ]{0,5}[a-zA-Z0-9]{1,5}[.)][ \\t\\n]", TextStyle.getStyle(Color.BLACK, true)),
-    COMMENT("((?m)^#[ ]+.*$)|((?m)^.*<!-- .+ -->.*$)", TextStyle.getStyle(Color.GRAY, false)),
-    STRESS("[=]{3,}.", TextStyle.getStyle(Color.RED, true)),
-    STRESS_MINUS("((?m)[-]{3,}.*$)", TextStyle.getStyle(Color.RED, false)),
-    STRESS_PLUS("((?m)[+]{3,}.*$)", TextStyle.getStyle(new Color(0, 150, 0), false)),
-    XML("<[^>]+>", TextStyle.getStyle(new Color(0, 150, 0), false)),
-    CODE("(?s)\\{code:(java|sql)\\}(.*?)\\{code\\}",  TextStyle.getStyle(Color.BLACK));
+    TITLE("\\A.*?(?=\\r?\\n|\\z)", TextStyle.titleStyle(), false),
+    VARIABLE("[\"]{0,1}[a-zA-Z][a-zA-Z0-9-._]{0,50}[\"]{0,1}[ \t]{0,2}[:=]", TextStyle.getWithForeground(new Color(0, 150, 0), false), false),
+    TAG("#[a-zA-Z]+[a-zA-Z0-9]*", TextStyle.getWithForeground(Color.ORANGE, false), false),
+    URL("(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", TextStyle.urlStyle(), false),
+    MD_BOLD_ITALIC("\\*\\*\\*(.*?)\\*\\*\\*", TextStyle.boldItalicStyle(), false),
+    MD_BOLD("\\*\\*(.*?)\\*\\*", TextStyle.boldStyle(), false),
+    MD_ITALIC("\\*(.*?)\\*", TextStyle.italicStyle(), false),
+    MD_QUOTE("(^|\\r?\\n)> [^\\r\\n]*", TextStyle.quoteStyle(), false),
+    MD_PARAGRAPH4("(^|\\r?\\n)#### [^\\r\\n]*", TextStyle.paragraph4Style(), false),
+    MD_PARAGRAPH3("(^|\\r?\\n)### [^\\r\\n]*", TextStyle.paragraph3Style(), false),
+    MD_PARAGRAPH2("(^|\\r?\\n)## [^\\r\\n]*", TextStyle.paragraph2Style(), false),
+    INTERNAL_URL("\\(\\([^\\r\\n]*\\)\\)", TextStyle.urlStyle(), false),
+    LIST("(?m)^[ ]{0,5}[a-zA-Z0-9]{1,5}[.)][ \\t\\n]", TextStyle.getWithForeground(Color.BLACK, true), false),
+    COMMENT("((?m)^#[ ]+.*$)|((?m)^.*<!-- .+ -->.*$)", TextStyle.getWithForeground(Color.GRAY, false), false),
+    STRESS("[=]{3,}.", TextStyle.getWithForeground(Color.RED, true), false),
+    STRESS_MINUS("((?m)[-]{3,}.*$)", TextStyle.getWithForeground(Color.RED, false), false),
+    STRESS_PLUS("((?m)[+]{3,}.*$)", TextStyle.getWithForeground(new Color(0, 150, 0), false), false),
+    XML("<[^>]+>", TextStyle.getWithForeground(new Color(0, 150, 0), false), false),
+    CODE("(?s)\\{code:(java|sql)\\}(.*?)\\{code\\}",  TextStyle.getWithForeground(Color.BLACK), false);
 
     private final String regexp;
     private final SimpleAttributeSet style;
+    private final boolean replace;
 
     public Set<String> search(String data) {
         Pattern pattern = Pattern.compile(this.getRegexp());

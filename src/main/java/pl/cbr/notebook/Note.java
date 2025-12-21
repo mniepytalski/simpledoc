@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import pl.cbr.notebook.diary.Diary;
 import pl.cbr.notebook.ui.swing.Keyword;
+import pl.cbr.notebook.utils.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,10 +48,9 @@ public class Note {
         }
     }
 
-    public String findUrl(int position) {
+    public NoteUrl findUrl(int position) {
         return urls.stream()
                 .filter(url -> url.getStart() <= position && url.getEnd() > position)
-                .map(NoteUrl::getUrl)
                 .findFirst()
                 .orElse(null);
     }
@@ -68,7 +68,7 @@ public class Note {
     }
 
     public static Note empty()  {
-        return new Note(FileData.empty(), "", Set.of(), true);
+        return new Note(FileData.empty(), StringUtil.EMPTY, Set.of(), true);
     }
 
     private static String getNoteTitle(String data) {
@@ -76,7 +76,7 @@ public class Note {
         if (lines.length >= 1) {
             return lines[0].trim();
         } else {
-            return "";
+            return StringUtil.EMPTY;
         }
     }
 }

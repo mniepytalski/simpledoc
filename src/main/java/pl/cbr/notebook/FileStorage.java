@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +18,7 @@ import java.sql.Date;
 public class FileStorage {
 
     public static FileData load(String fileName) {
-        String fileLocation = getFileLocation(fileName);
+        String fileLocation = getFileDataLocation(fileName);
         Date modificationDate = getModificationDate(fileLocation);
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation, StandardCharsets.UTF_8))) {
             String line;
@@ -34,7 +35,7 @@ public class FileStorage {
     }
 
     public static boolean save(String fileName, String data) {
-        String fileLocation = getFileLocation(fileName);
+        String fileLocation = getFileDataLocation(fileName);
         try (FileOutputStream outputStream = new FileOutputStream(fileLocation)) {
             outputStream.write(data
 //                    .replaceAll("\n+", "\n")
@@ -46,7 +47,7 @@ public class FileStorage {
     }
 
     public static boolean delete(String fileName) {
-        String fileLocation = getFileLocation(fileName);
+        String fileLocation = getFileDataLocation(fileName);
         File file = new File(fileLocation);
         if (exists(fileLocation)) {
             return file.delete();
@@ -54,9 +55,17 @@ public class FileStorage {
         return false;
     }
 
-    public static void copyToBackup(String sourceFileName, String targetFileName) {
-        String sourceLocation = getFileLocation(sourceFileName);
-        String targetLocation = getFileLocation(targetFileName);
+    public static void copyFromResource(String resourceFileName, String targetLocation) {
+        InputStream is = FileStorage.class.getResourceAsStream(resourceFileName);
+        Path target = Paths.get(targetLocation);
+        try {
+            Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.out.println(e.getMessage() + "," + e);
+        }
+    }
+
+    public static void copy(String sourceLocation, String targetLocation) {
         Path source = Paths.get(sourceLocation);
         Path target = Paths.get(targetLocation);
         try {
@@ -74,6 +83,15 @@ public class FileStorage {
         }
     }
 
+    public static String getFileDataLocation(String fileName) {
+        File currentDir = new File(StorageConfig.CURRENT_DIR);
+        String path = currentDir.getAbsolutePath();
+        if (path.endsWith(StorageConfig.FILE_SUFFIX)) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path + StorageConfig.FILE_SUFFIX + fileName;
+    }
+
     private static Date getModificationDate(String absoluteFileName) {
         Path path = Paths.get(absoluteFileName);
         FileTime fileLastModifiedDate;
@@ -89,14 +107,5 @@ public class FileStorage {
     private static boolean exists(String absoluteFileName) {
         File file = new File(absoluteFileName);
         return file.exists();
-    }
-
-    private static String getFileLocation(String fileName) {
-        File currentDir = new File(StorageConfig.CURRENT_DIR);
-        String path = currentDir.getAbsolutePath();
-        if (path.endsWith(StorageConfig.FILE_SUFFIX)) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path + StorageConfig.FILE_SUFFIX + fileName;
     }
 }

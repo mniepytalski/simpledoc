@@ -20,14 +20,14 @@ public class JsonSimpleFormatter {
                 case '{' | '[':
                     formatted.append(c);
                     if (!inQuotes) {
-                        formatted.append("\n");
+                        formatted.append(StringUtil.ENTER);
                         indent++;
                         appendIndent(formatted, indent);
                     }
                     break;
                 case '}' | ']':
                     if (!inQuotes) {
-                        formatted.append("\n");
+                        formatted.append(StringUtil.ENTER);
                         indent--;
                         appendIndent(formatted, indent);
                     }
@@ -36,14 +36,14 @@ public class JsonSimpleFormatter {
                 case ',':
                     formatted.append(c);
                     if (!inQuotes) {
-                        formatted.append("\n");
+                        formatted.append(StringUtil.ENTER);
                         appendIndent(formatted, indent);
                     }
                     break;
                 case ':':
                     formatted.append(c);
                     if (!inQuotes) {
-                        formatted.append(" ");
+                        formatted.append(StringUtil.SPACE);
                     }
                     break;
                 default:
@@ -53,7 +53,7 @@ public class JsonSimpleFormatter {
         }
         return formatted.toString()
                 .replaceAll(":[ ]+", ": ")
-                .replaceAll("([ \\t]*\\r?\\n)+", "\n");
+                .replaceAll("([ \\t]*\\r?\\n)+", StringUtil.ENTER);
     }
 
     private static boolean checkBeckSlashBefore(int i, String json) {

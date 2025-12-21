@@ -5,7 +5,10 @@ import lombok.Getter;
 @Getter
 public class AppConfig {
 
-    private final String title = "Simpledoc v2.3.2";
+    private final int appWidth = 700;
+    private final int appHeight = 500;
+
+    private final String title = "Simpledoc v2.3.3";
 
     private final String messageAuthor = "Notebook @2025\nAuthor: Mariusz Niepytalski\nEmail: mniepytalski@icloud.com";
 
@@ -20,6 +23,4 @@ public class AppConfig {
     private final String buttonSave = "Save";
 
     private final String buttonDelete =  "Delete";
-
-    private final String buttonNew = "New";
 }
