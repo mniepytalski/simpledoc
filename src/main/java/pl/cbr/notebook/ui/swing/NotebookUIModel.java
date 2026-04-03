@@ -15,7 +15,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +22,20 @@ import java.util.stream.Collectors;
 public class NotebookUIModel {
 
     private final Notebook notebook;
-    private JTextPane textArea;
+    private TextPanel textArea;
     private JList<Note> listOfTitles;
     private DefaultListModel<Note> titleModel;
     JTextField searchField;
     private boolean urlStyleChanged = false;
 
+    private JPanel leftPanel;
+    private JPanel rightPanel;
+
+    private JSplitPane splitPane;
+    private static boolean leftPanelVisible = true;
+
+    private FindPanel findPanel;
+    private ReplacePanel replacePanel;
 
     public NotebookUIModel() {
         this.notebook = new Notebook();
@@ -102,30 +109,26 @@ public class NotebookUIModel {
         getNotebook().getActualNote().setData(getTextArea().getText());
     }
 
-    public void copyTextToClipboard(ActionEvent e) {
+    public void copyTextToClipboard() {
         String text = textArea.getSelectedText();
         Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(text), null);
         System.out.println("Copied: " + text);
     }
 
-    public void insertFromClipboard(ActionEvent e) {
+    public void insertFromClipboard() {
         try {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             String pasteText = (String) clipboard.getData(DataFlavor.stringFlavor);
-            String oldText = textArea.getText();
             textArea.replaceSelection(pasteText);
-            calculateDiff(oldText, textArea.getText());
             System.out.println("Pasted: " + pasteText);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Error: " + ex.getMessage());
         }
     }
 
     public void formatNote() {
-        String oldText = textArea.getText();
         textArea.replaceSelection(JsonSimpleFormatter.format(notebook.getMarkedDocument().getText()));
-        calculateDiff(oldText, textArea.getText());
         notebook.getActualNote().setData(textArea.getText());
         notebook.getMarkedDocument().clear();
     }
@@ -145,6 +148,24 @@ public class NotebookUIModel {
             textArea.setText(reversed);
             notebook.getActualNote().setData(textArea.getText());
         }
+    }
+
+    public void findDialog() {
+        findPanel.setVisible(!findPanel.isVisible());
+        findPanel.onStart();
+    }
+
+    public void replaceDialog() {
+        replacePanel.setVisible(!replacePanel.isVisible());
+        replacePanel.onStart();
+    }
+
+    public void leftSideOnOff() {
+        leftPanelVisible = !leftPanelVisible;
+        leftPanel.setVisible(leftPanelVisible);
+        splitPane.setDividerLocation(150);
+        splitPane.setResizeWeight(0.0);
+        splitPane.revalidate();
     }
 
     public void dumpChanges() {
@@ -187,6 +208,7 @@ public class NotebookUIModel {
         notebook.setActualNote(note);
         DocumentArea.print(note, textArea, searchField);
         textArea.grabFocus();
+        textArea.setCaretPosition(0);
     }
 
     public void cleanNoteWindow() {

@@ -81,12 +81,14 @@ public class Notebook {
     public Note loadByTextId(String textId) {
         Optional<Note> note = notes.stream().filter(n -> n.getTextId().equalsIgnoreCase(textId)).findFirst();
         actualNote = note.orElseGet(Note::empty);
+        actualNote.setData(note.get().getData().replaceAll("\r\n", "\n"));
         return actualNote;
     }
 
     public Note loadByTitle(String title) {
         Optional<Note> note = notes.stream().filter(n -> n.getTitle().equalsIgnoreCase(title)).findFirst();
         actualNote = note.orElseGet(Note::empty);
+        actualNote.setData(note.get().getData().replaceAll("\r\n", "\n"));
         return actualNote;
     }
 
