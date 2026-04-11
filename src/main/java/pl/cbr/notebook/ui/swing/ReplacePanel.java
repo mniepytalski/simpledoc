@@ -15,16 +15,23 @@ public class ReplacePanel extends JPanel {
     JButton nextBtn = ButtonUtil.getIconButton("arrow1", "arrow1-hoover");
     JButton prevBtn = ButtonUtil.getIconButton("arrow2", "arrow2-hoover");
 
+    JToggleButton regexBtn = new JToggleButton(".*");
+    JToggleButton caseBtn = new JToggleButton("Aa");
+
     JButton replaceBtn = new JButton("Zamień");
-    JButton replaceAllBtn = new JButton("Wszystko");
+    JButton replaceAllBtn = new JButton("All");
 
     JButton closeBtn = new JButton("✖");
-
-    JCheckBox caseCheck = new JCheckBox("Aa");
 
     public ReplacePanel(JFrame frame, NotebookUIModel model) {
         this.frame = frame;
         this.model = model;
+
+        ButtonUtil.setSize(nextBtn);
+        ButtonUtil.setSize(prevBtn);
+        ButtonUtil.setSize(caseBtn);
+        ButtonUtil.setSize(regexBtn);
+        ButtonUtil.setSize(closeBtn);
 
         setLayout(new FlowLayout(FlowLayout.LEFT, 0, 3));
 
@@ -36,10 +43,12 @@ public class ReplacePanel extends JPanel {
         add(prevBtn);
         add(nextBtn);
 
+        add(caseBtn);
+        add(regexBtn);
+
         add(replaceBtn);
         add(replaceAllBtn);
 
-        add(caseCheck);
         add(closeBtn);
 
         initBehavior();
@@ -97,6 +106,13 @@ public class ReplacePanel extends JPanel {
         onReplaceButton(textArea);
         onReplaceAllButton(textArea);
         onStartPanel();
+        onClosePanel();
+    }
+
+    private void onClosePanel() {
+        closeBtn.addActionListener(e -> {
+            setVisible(false);
+        });
     }
 
     private void onStartPanel() {
@@ -112,7 +128,7 @@ public class ReplacePanel extends JPanel {
 
             if (search.isEmpty()) return;
 
-            if (caseCheck.isSelected()) {
+            if (caseBtn.isSelected()) {
                 textArea.setText(text.replace(search, replace));
             } else {
                 String lowerText = text.toLowerCase();
@@ -167,7 +183,7 @@ public class ReplacePanel extends JPanel {
 
             if (search.isEmpty()) return;
 
-            if (!caseCheck.isSelected()) {
+            if (!caseBtn.isSelected()) {
                 text = text.toLowerCase();
                 search = search.toLowerCase();
             }
@@ -191,7 +207,7 @@ public class ReplacePanel extends JPanel {
 
             if (search.isEmpty()) return;
 
-            if (!caseCheck.isSelected()) {
+            if (!caseBtn.isSelected()) {
                 text = text.toLowerCase();
                 search = search.toLowerCase();
             }

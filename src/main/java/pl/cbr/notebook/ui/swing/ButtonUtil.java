@@ -17,7 +17,7 @@ public class ButtonUtil {
         button.setMaximumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
     }
 
-    public void setButtonSize(JButton button) {
+    public void setSize(JButton button) {
         button.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
         button.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
         button.setMaximumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));

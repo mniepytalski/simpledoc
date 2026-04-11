@@ -31,14 +31,16 @@ public class FindPanel extends JPanel {
         findField = new JTextField(20);
 
         nextBtn = ButtonUtil.getIconButton("arrow1", "arrow1-hoover");
+        ButtonUtil.setSize(nextBtn);
         prevBtn = ButtonUtil.getIconButton("arrow2", "arrow2-hoover");
+        ButtonUtil.setSize(prevBtn);
 
         caseBtn = new JToggleButton("Aa");
         ButtonUtil.setSize(caseBtn);
         regexBtn = new JToggleButton(".*");
         ButtonUtil.setSize(regexBtn);
         closeBtn = new JButton("✖");
-        ButtonUtil.setButtonSize(closeBtn);
+        ButtonUtil.setSize(closeBtn);
 
         findField.setToolTipText("Szukaj tekstu");
         nextBtn.setToolTipText("Następne (Enter)");
