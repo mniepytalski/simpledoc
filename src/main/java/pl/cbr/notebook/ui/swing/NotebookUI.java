@@ -103,8 +103,8 @@ public class NotebookUI {
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         buttonPanel.add(createDeleteButton());
         buttonPanel.add(Box.createHorizontalGlue());
-        buttonPanel.add(createSaveButton());
         buttonPanel.add(positionLabel);
+        buttonPanel.add(createSaveButton());
         return buttonPanel;
     }
 
