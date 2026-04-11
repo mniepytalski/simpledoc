@@ -98,9 +98,7 @@ public class FindPanel extends JPanel {
         onNextButton(textPane);
         onPreviousButton(textPane);
 
-        closeBtn.addActionListener(e -> {
-            setVisible(false);
-        });
+        closeBtn.addActionListener(e -> setVisible(false));
     }
 
     private void onNextButton(JTextPane textPane) {

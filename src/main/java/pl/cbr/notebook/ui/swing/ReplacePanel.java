@@ -110,9 +110,7 @@ public class ReplacePanel extends JPanel {
     }
 
     private void onClosePanel() {
-        closeBtn.addActionListener(e -> {
-            setVisible(false);
-        });
+        closeBtn.addActionListener(e -> setVisible(false));
     }
 
     private void onStartPanel() {
