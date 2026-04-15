@@ -20,7 +20,7 @@ public class Note {
     private String title;
     private Set<String> tags;
     private final boolean newNote;
-    private List<NoteUrl> urls;
+    private final List<NoteUrl> urls;
     private final Diary diary;
 
     private Note(FileData file, String title, Set<String> tags, boolean newNote) {

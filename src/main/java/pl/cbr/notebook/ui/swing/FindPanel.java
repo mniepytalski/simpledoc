@@ -35,11 +35,11 @@ public class FindPanel extends JPanel {
         prevBtn = ButtonUtil.getIconButton("arrow2", "arrow2-hoover");
         ButtonUtil.setSize(prevBtn);
 
-        caseBtn = new JToggleButton("Aa");
+        caseBtn = ButtonUtil.getToggleButton("lower-upper", "lower-upper-hoover");
         ButtonUtil.setSize(caseBtn);
-        regexBtn = new JToggleButton(".*");
+        regexBtn = ButtonUtil.getToggleButton("regexp", "regexp-hoover");
         ButtonUtil.setSize(regexBtn);
-        closeBtn = new JButton("✖");
+        closeBtn = ButtonUtil.getIconButton("close", "close-hoover");
         ButtonUtil.setSize(closeBtn);
 
         findField.setToolTipText("Szukaj tekstu");

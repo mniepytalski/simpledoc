@@ -43,7 +43,7 @@ public class NotebookUI {
             JPanel northContainer = new JPanel();
             northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
 
-            northContainer.add(createTopRightPanel());      // Twój pasek
+            northContainer.add(createTopRightPanel());
 
             Label positionLabel = new Label();
             TextPanel textArea = new TextPanel(model, positionLabel);

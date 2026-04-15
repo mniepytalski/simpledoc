@@ -29,6 +29,13 @@ public class ButtonUtil {
         return detailsButton;
     }
 
+    public JToggleButton getToggleButton(String icon, String hoover) {
+        JToggleButton detailsButton = new JToggleButton(new ImageIcon(getResource("icons/" + icon + ".png")));
+        ImageIcon pressedIcon = new ImageIcon(getResource("icons/" + hoover + ".png"));
+        detailsButton.setSelectedIcon(pressedIcon);
+        return detailsButton;
+    }
+
     private URL getResource(String name) {
         return Thread.currentThread()
                 .getContextClassLoader()

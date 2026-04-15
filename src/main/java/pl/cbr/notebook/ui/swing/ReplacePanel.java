@@ -15,13 +15,13 @@ public class ReplacePanel extends JPanel {
     JButton nextBtn = ButtonUtil.getIconButton("arrow1", "arrow1-hoover");
     JButton prevBtn = ButtonUtil.getIconButton("arrow2", "arrow2-hoover");
 
-    JToggleButton regexBtn = new JToggleButton(".*");
-    JToggleButton caseBtn = new JToggleButton("Aa");
+    JToggleButton regexBtn = ButtonUtil.getToggleButton("regexp", "regexp-hoover");
+    JToggleButton caseBtn = ButtonUtil.getToggleButton("lower-upper", "lower-upper-hoover");
 
     JButton replaceBtn = new JButton("Zamień");
     JButton replaceAllBtn = new JButton("All");
 
-    JButton closeBtn = new JButton("✖");
+    JButton closeBtn = ButtonUtil.getIconButton("close", "close-hoover");
 
     public ReplacePanel(JFrame frame, NotebookUIModel model) {
         this.frame = frame;
