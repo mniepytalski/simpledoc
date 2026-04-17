@@ -8,13 +8,13 @@ public class AppConfig {
     private final int appWidth = 700;
     private final int appHeight = 500;
 
-    private final String title = "Simpledoc v2.3.4";
+    private final String title = "Simpledoc v2.3.5";
 
     private final String messageAuthor = "Notebook @2025\nAuthor: Mariusz Niepytalski\nEmail: mniepytalski@icloud.com";
 
     private final String messageHelp = "Help\nCTRL+S - save\nCTRL+D - delete\nCTRL+N - new\nCTRL+L - format selected text, only json"
             + "\nCTRL+C - copy selected text\nCTRL+V - paste selected text\nCTRL+X - copy and delete selected text"
-            + "\nCTRL+Z - rollback last changes";
+            + "\nCTRL+Z - rollback last changes \nCTRL+1 - hide/show left panel \nCTRL+F - find panel \nCTRL+R - replace panel";
 
     private final String dialogTitleHelp = "Help";
 
