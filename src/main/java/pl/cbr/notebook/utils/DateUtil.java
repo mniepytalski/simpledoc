@@ -13,4 +13,14 @@ public class DateUtil {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd HH:mm");
         return simpleDateFormat.format(date);
     }
+
+    public static String formatShortDate(Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+        return simpleDateFormat.format(date);
+    }
+
+    public static String formatDayDate(Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd");
+        return simpleDateFormat.format(date);
+    }
 }

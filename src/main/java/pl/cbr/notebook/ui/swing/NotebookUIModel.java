@@ -23,8 +23,7 @@ public class NotebookUIModel {
 
     private final Notebook notebook;
     private TextPanel textArea;
-    private JList<Note> listOfTitles;
-    private DefaultListModel<Note> titleModel;
+    private ListOfNotes listOfTitlesUI;
     JTextField searchField;
     private boolean urlStyleChanged = false;
 
@@ -41,6 +40,10 @@ public class NotebookUIModel {
         this.notebook = new Notebook();
         Config.set("time", "" + System.currentTimeMillis());
     }
+    public NotebookUIModel(Notebook notebook) {
+        this.notebook = new Notebook();
+        Config.set("time", "" + System.currentTimeMillis());
+    }
 
     public void newNote() {
         NoteLog.info("new");
@@ -53,13 +56,7 @@ public class NotebookUIModel {
         if (actualNote.getFileName() != null) {
             notebook.delete(actualNote);
         }
-        for (int i = 0; i < titleModel.size(); i++) {
-            Note s = titleModel.get(i);
-            if (s.getTextId().equals(actualNote.getTextId())) {
-                titleModel.removeElementAt(i);
-                break;
-            }
-        }
+        listOfTitlesUI.remove(actualNote);
         cleanNoteWindow();
     }
 
@@ -70,16 +67,9 @@ public class NotebookUIModel {
         notebook.getActualNote().setData(textArea.getText());
         Note note = notebook.save(notebook.getActualNote());
         note.setTitle(notebook.getNoteTitle(note.getData()));
-        if (note.isNewNote()) {
-            titleModel.addElement(note);
-        } else {
-            for (int i = 0; i < titleModel.size(); i++) {
-                if (notebook.getActualNote().getTextId().equals(titleModel.get(i).getTextId())) {
-                    notebook.getActualNote().setData(titleModel.get(i).getData());
-                    titleModel.set(i, notebook.getActualNote());
-                }
-            }
-        }
+
+        listOfTitlesUI.saveNote(note, notebook.getActualNote());
+
         notebook.getActualNote().setTitle(notebook.getNoteTitle(textArea.getText()));
         recreateList(searchNoteByText(searchField.getText()));
         NoteLog.info("save: {}", note.getFileName());
@@ -163,7 +153,7 @@ public class NotebookUIModel {
     public void leftSideOnOff() {
         leftPanelVisible = !leftPanelVisible;
         leftPanel.setVisible(leftPanelVisible);
-        splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(200);
         splitPane.setResizeWeight(0.0);
         splitPane.revalidate();
     }
@@ -193,12 +183,8 @@ public class NotebookUIModel {
         Note noteForTitle = getNotebook().loadByTitle(internalLink);
         System.out.println("Try to open internal URL: " + internalLink +" found: " + noteForTitle.getTitle());
         if (noteForTitle.getTitle() != null) {
-            for (int i = 0; i < listOfTitles.getModel().getSize(); i++ ) {
-                if (noteForTitle.getTextId().equals(listOfTitles.getModel().getElementAt(i).getTextId()) ) {
-                    listOfTitles.setSelectedIndex(i);
-                    setNoteFromTextId(noteForTitle.getTextId());
-                    break;
-                }
+            if ( listOfTitlesUI.setSelectedIndex(noteForTitle) != -1) {
+                setNoteFromTextId(noteForTitle.getTextId());
             }
         }
     }
@@ -218,7 +204,6 @@ public class NotebookUIModel {
     }
 
     private void recreateList(List<Note> notes) {
-        titleModel.removeAllElements();
-        notes.forEach(note -> titleModel.addElement(note));
+        listOfTitlesUI.reCreate(notes);
     }
 }

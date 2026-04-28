@@ -1,5 +1,6 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.Getter;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
 import pl.cbr.notebook.utils.DateUtil;
@@ -8,20 +9,27 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.Optional;
 
-public class ListOfTitlesUI {
+
+public class ListOfTitlesUI implements ListOfNotes {
 
     private final Frame frame;
     private final NotebookUIModel model;
+    private JList<Note> elements;
+    private DefaultListModel<Note> titleModel;
+    @Getter
+    private JScrollPane scrollPane;
 
     public ListOfTitlesUI(Frame frame, NotebookUIModel model) {
         this.frame = frame;
         this.model = model;
+        scrollPane = create();
     }
 
-    public JList<Note> create() {
-        DefaultListModel<Note> titleModel = new DefaultListModel<>();
+    public JScrollPane create() {
+        titleModel = new DefaultListModel<>();
         Notebook notebook = model.getNotebook();
         titleModel.addAll(notebook.getNotes());
         JList<Note> titleList = new JList<>(titleModel);
@@ -67,17 +75,11 @@ public class ListOfTitlesUI {
             public void mouseClicked(MouseEvent me) {
                 getSelectedNote(me).ifPresent(note -> {
                     if (MouseEvent.BUTTON3 == me.getButton()) {
-                        JPopupMenu popup = new JPopupMenu();
-                        JMenuItem menuItemInfo = new JMenuItem("Informacje");
-                        popup.add(menuItemInfo);
-                        popup.show(me.getComponent(), me.getX(), me.getY());
-                        menuItemInfo.addActionListener(e -> JOptionPane.showMessageDialog(frame,
-                                "Title: " + note.getTitle() + "\nFile name: " + note.getFileName(),
-                                note.getTitle() ,
-                                JOptionPane.INFORMATION_MESSAGE));
+                        createMenu(note, me);
+                        clickMouseRightButton(note);
                     }
                     if (me.getClickCount() == 1) {
-                        model.setNoteFromTextId(note.getTextId());
+                        clickMouseLeftButton(note);
                     }
                 });
             }
@@ -86,14 +88,78 @@ public class ListOfTitlesUI {
                 JList<Note> target = (JList<Note>) me.getSource();
                 int index = target.locationToIndex(me.getPoint());
                 if (index >= 0) {
-                    return Optional.of(model.getTitleModel().get(index));
+                    return Optional.of(titleModel.get(index));
                 } else  {
                     return Optional.empty();
                 }
             }
         });
 
-        model.setTitleModel(titleModel);
-        return titleList;
+        elements = titleList;
+        return new JScrollPane(titleList);
+    }
+
+    @Override
+    public void clickMouseLeftButton(Note note) {
+        System.out.println("clickMouseLeftButton");
+        model.setNoteFromTextId(note.getTextId());
+    }
+
+    @Override
+    public void clickMouseRightButton(Note note) {
+        System.out.println("clickMouseRightButton");
+    }
+
+    @Override
+    public void remove(Note note) {
+        for (int i = 0; i < titleModel.size(); i++) {
+            Note s = titleModel.get(i);
+            if (s.getTextId().equals(note.getTextId())) {
+                titleModel.removeElementAt(i);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public int setSelectedIndex(Note note) {
+        for (int i = 0; i < elements.getModel().getSize(); i++ ) {
+            if (note.getTextId().equals(elements.getModel().getElementAt(i).getTextId()) ) {
+                elements.setSelectedIndex(i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void reCreate(List<Note> notes) {
+        titleModel.removeAllElements();
+        notes.forEach(note -> titleModel.addElement(note));
+    }
+
+    @Override
+    public void saveNote(Note note, Note actualNote) {
+        if (note.isNewNote()) {
+            titleModel.addElement(note);
+        } else {
+            for (int i = 0; i < titleModel.size(); i++) {
+                if (actualNote.getTextId().equals(titleModel.get(i).getTextId())) {
+                    actualNote.setData(titleModel.get(i).getData());
+                    titleModel.set(i, actualNote);
+                }
+            }
+        }
+    }
+
+    private void createMenu(Note note, MouseEvent me) {
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem menuItemInfo = new JMenuItem("Informacje");
+        popup.add(menuItemInfo);
+        popup.show(me.getComponent(), me.getX(), me.getY());
+        menuItemInfo.addActionListener(e -> JOptionPane.showMessageDialog(frame,
+                "Title: " + note.getTitle() + "\nFile name: " + note.getFileName(),
+                note.getTitle() ,
+                JOptionPane.INFORMATION_MESSAGE));
     }
 }

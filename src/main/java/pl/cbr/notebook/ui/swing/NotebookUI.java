@@ -33,10 +33,11 @@ public class NotebookUI {
             frame = createFrame();
 
             model.setLeftPanel(new JPanel(new BorderLayout()));
-            ListOfTitlesUI listOfTitlesUI = new ListOfTitlesUI(frame, model);
-            model.setListOfTitles(listOfTitlesUI.create());
-            JScrollPane leftScrollPane = new JScrollPane(model.getListOfTitles());
-            model.getLeftPanel().add(leftScrollPane, BorderLayout.CENTER);
+//            ListOfNotes listOfNotes = new ListOfTitlesUI(frame, model);
+            ListOfNotes listOfNotes = new TreeOfTitlesUI(frame, model);
+
+            model.setListOfTitlesUI(listOfNotes);
+            model.getLeftPanel().add(listOfNotes.getScrollPane(), BorderLayout.CENTER);
 
             model.setRightPanel(new JPanel(new BorderLayout()));
 
@@ -59,7 +60,7 @@ public class NotebookUI {
                     model.getLeftPanel(),
                     model.getRightPanel()
             ));
-            model.getSplitPane().setDividerLocation(150);
+            model.getSplitPane().setDividerLocation(200);
             model.getSplitPane().setResizeWeight(0.0);
 
             frame.add(model.getSplitPane(), BorderLayout.CENTER);
@@ -91,9 +92,15 @@ public class NotebookUI {
     private JPanel createTopRightPanel() {
         JPanel topRightPanel = new JPanel();
         topRightPanel.setLayout(new BoxLayout(topRightPanel, BoxLayout.X_AXIS));
-        topRightPanel.add(createDetailsButton(), BorderLayout.EAST);
-        topRightPanel.add(createMenuButton());
-        topRightPanel.add(createNewButton());
+        JButton detailsButton = createDetailsButton();
+        ButtonUtil.setSize(detailsButton);
+        topRightPanel.add(detailsButton, BorderLayout.EAST);
+        JButton menuButton = createMenuButton();
+        ButtonUtil.setSize(menuButton);
+        topRightPanel.add(menuButton);
+        JButton newButton = createNewButton();
+        ButtonUtil.setSize(newButton);
+        topRightPanel.add(newButton);
         topRightPanel.add(createSearchField());
         return topRightPanel;
     }
@@ -156,15 +163,15 @@ public class NotebookUI {
     }
 
     private void addShortcuts() {
-        defineShortCut(KeyEvent.VK_S, NotebookUIModel::saveNote);
-        defineShortCut(KeyEvent.VK_N, NotebookUIModel::newNote);
-        defineShortCut(KeyEvent.VK_D, NotebookUIModel::deleteNote);
-        defineShortCut(KeyEvent.VK_L, NotebookUIModel::formatNote);
-        defineShortCut(KeyEvent.VK_Z, NotebookUIModel::rollbackNote);
-        defineShortCut(KeyEvent.VK_P, NotebookUIModel::dumpChanges);
         defineShortCut(KeyEvent.VK_1, NotebookUIModel::leftSideOnOff);
+        defineShortCut(KeyEvent.VK_D, NotebookUIModel::deleteNote);
         defineShortCut(KeyEvent.VK_F, NotebookUIModel::findDialog);
+        defineShortCut(KeyEvent.VK_L, NotebookUIModel::formatNote);
+        defineShortCut(KeyEvent.VK_N, NotebookUIModel::newNote);
+        defineShortCut(KeyEvent.VK_P, NotebookUIModel::dumpChanges);
         defineShortCut(KeyEvent.VK_R, NotebookUIModel::replaceDialog);
+        defineShortCut(KeyEvent.VK_S, NotebookUIModel::saveNote);
+        defineShortCut(KeyEvent.VK_Z, NotebookUIModel::rollbackNote);
     }
 
     private void defineShortCut(int keyEvent, Consumer<NotebookUIModel> action) {
