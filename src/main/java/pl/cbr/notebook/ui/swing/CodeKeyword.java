@@ -17,7 +17,9 @@ public enum CodeKeyword {
     SQL("sql",
             Set.of(
                     CodeBlock.of(1, "--.*", TextStyle.getWithForeground(Color.GRAY)),
-                    CodeBlock.of(2, "(?i)\\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|JOIN|ORDER|BY|GROUP|HAVING|ASC|DESC|INTO|VALUES|SET)\\b",TextStyle.getWithForeground(Color.BLUE))
+                    CodeBlock.of(2, "(\\([0-9]+,{0,1}[0-9]*)", TextStyle.getWithForeground(new Color(0, 120, 0, 255))),
+                    CodeBlock.of(3, "['\"].*['\"]", TextStyle.getWithForeground(new Color(0, 120, 0, 255))),
+                    CodeBlock.of(4, "(?i)\\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|JOIN|ORDER|BY|GROUP|HAVING|ASC|DESC|INTO|VALUES|SET|CREATE|TABLE|NOT|NULL|ENABLE|CONSTRAINT|PRIMARY|KEY|ALTER|ADD|DROP|UNIQUE|FOREIGN|DEFAULT|CHAR|DATE|NUMBER|VARCHAR2|INDEX|ON|TO|COLUMN|REFERENCES)\\b",TextStyle.getWithForeground(Color.BLUE))
             )
     ),
     JAVA("java",
