@@ -8,7 +8,7 @@ public class AppConfig {
     private final int appWidth = 700;
     private final int appHeight = 500;
 
-    private final String title = "Simpledoc v2.3.5";
+    private final String title = "Simpledoc v2.3.6";
 
     private final String messageAuthor = "Notebook @2025\nAuthor: Mariusz Niepytalski\nEmail: mniepytalski@icloud.com";
 

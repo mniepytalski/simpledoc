@@ -21,7 +21,6 @@ public class Notebook {
         FileStorage.createDir(StorageConfig.CURRENT_DIR);
         FileStorage.createDir(StorageConfig.CURRENT_DIR + StorageConfig.BACKUP_DIR);
 
-
         FileStorage.copyFromResource("/Info.txt", FileStorage.getFileDataLocation("Info.txt"));
         notes = NotebookStorage.getAll().stream()
                 .sorted((o1, o2) -> o2.getFile().getModificationDate()

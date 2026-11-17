@@ -26,7 +26,7 @@ public enum Keyword {
     MD_PARAGRAPH3("(^|\\r?\\n)### [^\\r\\n]*", TextStyle.paragraph3Style(), false),
     MD_PARAGRAPH2("(^|\\r?\\n)## [^\\r\\n]*", TextStyle.paragraph2Style(), false),
     INTERNAL_URL("\\(\\([^\\r\\n]*\\)\\)", TextStyle.urlStyle(), false),
-    LIST("(?m)^[ ]{0,5}[a-zA-Z0-9]{1,5}[.)][ \\t\\n]", TextStyle.getWithForeground(Color.BLACK, true), false),
+    LIST("(?m)^[ ]{0,10}[a-zA-Z0-9]{1,5}[.)]([a-zA-Z0-9]{1,5}[.)])*[ \\t\\n]", TextStyle.getWithForeground(Color.BLACK, true), false),
     COMMENT("((?m)^#[ ]+.*$)|((?m)^.*<!-- .+ -->.*$)", TextStyle.getWithForeground(Color.GRAY, false), false),
     STRESS("[=]{3,}.", TextStyle.getWithForeground(Color.RED, true), false),
     STRESS_MINUS("((?m)[-]{3,}.*$)", TextStyle.getWithForeground(Color.RED, false), false),

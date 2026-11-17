@@ -1,6 +1,7 @@
 package pl.cbr.notebook.ui.swing;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.Note;
 
 import javax.swing.*;
@@ -13,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Getter
 public class TreeOfTitlesUI implements ListOfNotes {
 
@@ -73,7 +75,7 @@ public class TreeOfTitlesUI implements ListOfNotes {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         DefaultMutableTreeNode foundNode = findNode(getRoot(), note.toString());
         if (foundNode != null && foundNode.getParent() != null && foundNode.getUserObject() instanceof Note) {
-            System.out.println("Node to remove: " + foundNode);
+            log.info("Node to remove: {}", foundNode);
             model.removeNodeFromParent(foundNode);
         }
     }
@@ -84,24 +86,20 @@ public class TreeOfTitlesUI implements ListOfNotes {
     }
 
     public void clickMouseLeftButton(Note note) {
-        System.out.println("clickMouseLeftButton");
-        System.out.println("Otwórz notatkę: " + note.getLabel());
         model.setNoteFromTextId(note.getTextId());
     }
 
     public void clickMouseRightButton(Note note) {
-        System.out.println("clickMouseRightButton");
-        System.out.println("set actual note: " + note.getTextId());
         model.setNoteFromTextId(note.getTextId());
     }
 
     @Override
     public int setSelectedIndex(Note note) {
-        System.out.println("setSelectedIndex: " + note.getTextId());
+        log.info("setSelectedIndex: {}", note.getTextId());
         DefaultMutableTreeNode node = findNode(getRoot(), note.toString());
         if (node == null) return -1;
         if (node.getUserObject() instanceof Note) {
-            System.out.println("Node to set: " + node.getUserObject());
+            log.info("Node to set: {}", node.getUserObject());
             TreePath path = new TreePath(node.getPath());
             tree.setSelectionPath(path);
             return 1;

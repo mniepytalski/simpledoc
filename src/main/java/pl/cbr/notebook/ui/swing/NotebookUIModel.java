@@ -1,6 +1,7 @@
 package pl.cbr.notebook.ui.swing;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.Config;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
@@ -18,6 +19,7 @@ import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Data
 public class NotebookUIModel {
 
@@ -46,13 +48,13 @@ public class NotebookUIModel {
     }
 
     public void newNote() {
-        NoteLog.info("new");
+        log.info("new");
         cleanNoteWindow();
     }
 
     public void deleteNote() {
         Note actualNote = notebook.getActualNote();
-        NoteLog.info("delete: {}", actualNote.getFileName());
+        log.info("delete: {}", actualNote.getFileName());
         if (actualNote.getFileName() != null) {
             notebook.delete(actualNote);
         }
@@ -72,7 +74,7 @@ public class NotebookUIModel {
 
         notebook.getActualNote().setTitle(notebook.getNoteTitle(textArea.getText()));
         recreateList(searchNoteByText(searchField.getText()));
-        NoteLog.info("save: {}", note.getFileName());
+        log.info("save: {}", note.getFileName());
     }
 
     public boolean calculateDiff() {
@@ -103,7 +105,7 @@ public class NotebookUIModel {
         String text = textArea.getSelectedText();
         Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(text), null);
-        System.out.println("Copied: " + text);
+        log.info("Copied: {}", text);
     }
 
     public void insertFromClipboard() {
@@ -111,9 +113,9 @@ public class NotebookUIModel {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             String pasteText = (String) clipboard.getData(DataFlavor.stringFlavor);
             textArea.replaceSelection(pasteText);
-            System.out.println("Pasted: " + pasteText);
+            log.info("Pasted: {}", pasteText);
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 
@@ -128,13 +130,12 @@ public class NotebookUIModel {
         Diary diary = notebook.getActualNote().getDiary();
         if (!diary.getChanges().isEmpty()) {
             DiaryChange change = diary.getChanges().remove(diary.getChanges().size() - 1);
-            System.out.println("==============");
-            System.out.println("diff:\n" + change.getChange());
-            System.out.println("--------------");
-            System.out.println("input:\n" + textArea.getText());
-            System.out.println("--------------");
+            log.info("==============");
+            log.info("diff:\n{}", change.getChange());
+            log.info("input:\n{}", textArea.getText());
+            log.info("--------------");
             String reversed = MyersDiff.reverseApply(textArea.getText(), change.getChange());
-            System.out.println("reverse changed:\n" + reversed);
+            log.info("reverse changed:\n{}", reversed);
             textArea.setText(reversed);
             notebook.getActualNote().setData(textArea.getText());
         }
@@ -170,6 +171,8 @@ public class NotebookUIModel {
     }
 
     public List<Note> searchNoteByText(String searchText) {
+        replacePanel.setSearchText(searchText);
+        findPanel.setSearchText(searchText);
         if (searchText == null || searchText.isEmpty()) {
             return notebook.sortedNotes();
         }
@@ -181,7 +184,7 @@ public class NotebookUIModel {
 
     public void setNoteFromInternalLink(String internalLink) {
         Note noteForTitle = getNotebook().loadByTitle(internalLink);
-        System.out.println("Try to open internal URL: " + internalLink +" found: " + noteForTitle.getTitle());
+        log.info("Try to open internal URL: {} found: {}", internalLink, noteForTitle.getTitle());
         if (noteForTitle.getTitle() != null) {
             if ( listOfTitlesUI.setSelectedIndex(noteForTitle) != -1) {
                 setNoteFromTextId(noteForTitle.getTextId());

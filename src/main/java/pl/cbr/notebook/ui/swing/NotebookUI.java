@@ -1,5 +1,6 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.Config;
 import pl.cbr.notebook.Note;
 
@@ -12,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.function.Consumer;
 
+@Slf4j
 public class NotebookUI {
     private final NotebookUIModel model;
     JFrame frame;
@@ -33,7 +35,6 @@ public class NotebookUI {
             frame = createFrame();
 
             model.setLeftPanel(new JPanel(new BorderLayout()));
-//            ListOfNotes listOfNotes = new ListOfTitlesUI(frame, model);
             ListOfNotes listOfNotes = new TreeOfTitlesUI(frame, model);
 
             model.setListOfTitlesUI(listOfNotes);
@@ -83,7 +84,7 @@ public class NotebookUI {
                 model.saveNote();
                 Config.save();
                 frame.dispose();
-                NoteLog.info("closed");
+                log.info("closed");
             }
         });
         return frame;
@@ -131,9 +132,9 @@ public class NotebookUI {
         JTextField searchField = new JTextField();
         model.setSearchField(searchField);
         searchField.addActionListener(e -> {
-            NoteLog.info("search: {}", e.getActionCommand());
+            log.info("search: {}", e.getActionCommand());
             List<Note> notes = model.searchNote(e.getActionCommand());
-            notes.forEach(note -> NoteLog.info("filename: {}, title: {}", note.getFileName(), note.getTitle()));
+            notes.forEach(note -> log.info("filename: {}, title: {}", note.getFileName(), note.getTitle()));
         });
         return searchField;
     }

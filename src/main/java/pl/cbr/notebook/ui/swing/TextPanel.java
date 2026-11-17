@@ -1,5 +1,6 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.NoteUrl;
 import pl.cbr.notebook.utils.SelectedTextUtil;
 
@@ -13,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
 
+@Slf4j
 public class TextPanel extends JTextPane {
 
     private final NotebookUIModel model;
@@ -65,7 +67,7 @@ public class TextPanel extends JTextPane {
                     Element root = model.getTextArea().getDocument().getDefaultRootElement();
                     int line = root.getElementIndex(caretPosition) + 1; // +1, jeśli chcesz liczyć od 1
                     if (line == totalLines) {
-                        System.out.println("Kursor jest w linii: " + line + " wszystkich jest:" + totalLines);
+                        log.info("Kursor jest w linii: {} wszystkich jest:{}", line, totalLines);
                     }
                 }
             }
@@ -123,7 +125,7 @@ public class TextPanel extends JTextPane {
                                 break;
                         }
                     } catch (Exception ex) {
-                        NoteLog.info(ex.getMessage());
+                        log.error(ex.getMessage());
                     }
                 }
             }

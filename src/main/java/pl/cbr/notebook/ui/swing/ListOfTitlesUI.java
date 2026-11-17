@@ -1,6 +1,7 @@
 package pl.cbr.notebook.ui.swing;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.Notebook;
 import pl.cbr.notebook.utils.DateUtil;
@@ -12,7 +13,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 public class ListOfTitlesUI implements ListOfNotes {
 
     private final Frame frame;
@@ -101,13 +102,13 @@ public class ListOfTitlesUI implements ListOfNotes {
 
     @Override
     public void clickMouseLeftButton(Note note) {
-        System.out.println("clickMouseLeftButton");
+        log.info("clickMouseLeftButton");
         model.setNoteFromTextId(note.getTextId());
     }
 
     @Override
     public void clickMouseRightButton(Note note) {
-        System.out.println("clickMouseRightButton");
+        log.info("clickMouseRightButton");
     }
 
     @Override

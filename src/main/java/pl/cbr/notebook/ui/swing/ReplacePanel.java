@@ -1,8 +1,11 @@
 package pl.cbr.notebook.ui.swing;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReplacePanel extends JPanel {
 
@@ -64,6 +67,10 @@ public class ReplacePanel extends JPanel {
         }
     }
 
+    public void setSearchText(String text) {
+        findField.setText(text);
+    }
+
     private void initBehavior() {
 
         // Enter → następny
@@ -120,11 +127,22 @@ public class ReplacePanel extends JPanel {
 
     private void onReplaceAllButton(JTextPane textArea) {
         replaceAllBtn.addActionListener(e -> {
-            String text = textArea.getText();
+            String text = getText(textArea);
             String search = findField.getText();
             String replace = replaceField.getText();
 
             if (search.isEmpty()) return;
+
+            if (regexBtn.isSelected()) {
+                Pattern pattern = Pattern.compile(search, Pattern.MULTILINE);
+                Matcher matcher = pattern.matcher(text);
+                textArea.setText(matcher.replaceAll(replace
+                        .replace("\\n","\n")
+                        .replace("\\r","\r")
+                        .replace("\\t","\t")
+                ));
+                return;
+            }
 
             if (caseBtn.isSelected()) {
                 textArea.setText(text.replace(search, replace));
@@ -176,7 +194,7 @@ public class ReplacePanel extends JPanel {
 
     private void onPreviousButton(JTextPane textArea) {
         prevBtn.addActionListener(e -> {
-            String text = textArea.getText();
+            String text = getText(textArea);
             String search = findField.getText();
 
             if (search.isEmpty()) return;
@@ -200,7 +218,7 @@ public class ReplacePanel extends JPanel {
 
     private void onNextButton(JTextPane textArea) {
         nextBtn.addActionListener(e -> {
-            String text = textArea.getText();
+            String text = getText(textArea);
             String search = findField.getText();
 
             if (search.isEmpty()) return;
@@ -220,5 +238,15 @@ public class ReplacePanel extends JPanel {
                 textArea.select(found, found + search.length());
             }
         });
+    }
+
+    private static String getText(JTextPane textPane) {
+        String originalText = null;
+        try {
+            originalText = textPane.getStyledDocument().getText(0, textPane.getStyledDocument().getLength());
+        } catch (BadLocationException ex) {
+            throw new RuntimeException(ex);
+        }
+        return originalText;
     }
 }

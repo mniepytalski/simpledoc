@@ -1,5 +1,6 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.extern.slf4j.Slf4j;
 import pl.cbr.notebook.Note;
 import pl.cbr.notebook.NoteUrl;
 import pl.cbr.notebook.NoteUrlType;
@@ -20,6 +21,7 @@ import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class DocumentArea {
 
     public static void print(Note note, JTextPane textArea, JTextField searchField) {
@@ -42,7 +44,7 @@ public class DocumentArea {
                 }
             }
         } catch (BadLocationException e) {
-            NoteLog.info(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -84,7 +86,7 @@ public class DocumentArea {
                             }
                         }
                     } catch (BadLocationException e) {
-                        NoteLog.info(e.getMessage());
+                        log.error(e.getMessage());
                     } finally {
                         isHighlighting = false;
                     }

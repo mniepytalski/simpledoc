@@ -1,11 +1,15 @@
 package pl.cbr.notebook.ui.swing;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class FindPanel extends JPanel {
 
     private final JFrame frame;
@@ -70,6 +74,10 @@ public class FindPanel extends JPanel {
         }
     }
 
+    public void setSearchText(String searchText) {
+        findField.setText(searchText);
+    }
+
     private void initBehavior() {
 
         findField.addActionListener(e -> nextBtn.doClick());
@@ -103,19 +111,15 @@ public class FindPanel extends JPanel {
 
     private void onNextButton(JTextPane textPane) {
         nextBtn.addActionListener(e -> {
-
-            String originalText = textPane.getText();
+            String originalText = getText(textPane);
             String text = originalText;
             String search = findField.getText();
 
             if (search.isEmpty()) return;
 
             int pos = textPane.getSelectionEnd(); // 🔥 ważniejsze niż caret
-
             try {
-                // 🔁 TRYB REGEX
                 if (regexBtn.isSelected()) {
-
                     int flags = caseBtn.isSelected() ? 0 : Pattern.CASE_INSENSITIVE;
                     Pattern pattern = Pattern.compile(search, flags);
                     Matcher matcher = pattern.matcher(originalText);
@@ -124,26 +128,19 @@ public class FindPanel extends JPanel {
                         textPane.requestFocus();
                         textPane.select(matcher.start(), matcher.end());
                     }
-
                 } else {
-                    // 🔁 TRYB ZWYKŁY
-
                     if (!caseBtn.isSelected()) {
                         text = text.toLowerCase();
                         search = search.toLowerCase();
                     }
-
                     int found = text.indexOf(search, pos);
-
                     if (found != -1) {
                         textPane.requestFocus();
                         textPane.select(found, found + search.length());
                     }
                 }
-
             } catch (Exception ex) {
-                // np. błędny regex "("
-                System.out.println("Błędny regex: " + search);
+                log.error("Błędny regex: {}", search);
             }
         });
     }
@@ -151,7 +148,7 @@ public class FindPanel extends JPanel {
     private void onPreviousButton(JTextPane textPane) {
         prevBtn.addActionListener(e -> {
 
-            String originalText = textPane.getText();
+            String originalText = getText(textPane);
             String text = originalText;
             String search = findField.getText();
 
@@ -160,11 +157,9 @@ public class FindPanel extends JPanel {
             int pos = textPane.getSelectionStart() - 1; // 🔥 kluczowe
 
             try {
-                // 🔁 TRYB REGEX
                 if (regexBtn.isSelected()) {
 
                     int flags = 0;
-
                     if (!caseBtn.isSelected()) {
                         flags |= Pattern.CASE_INSENSITIVE;
                         flags |= Pattern.UNICODE_CASE;
@@ -187,26 +182,30 @@ public class FindPanel extends JPanel {
                         textPane.requestFocus();
                         textPane.select(lastStart, lastEnd);
                     }
-
                 } else {
-                    // 🔁 TRYB ZWYKŁY
-
                     if (!caseBtn.isSelected()) {
                         text = text.toLowerCase();
                         search = search.toLowerCase();
                     }
-
                     int found = text.lastIndexOf(search, pos);
-
                     if (found != -1) {
                         textPane.requestFocus();
                         textPane.select(found, found + search.length());
                     }
                 }
-
             } catch (Exception ex) {
-                System.out.println("Błędny regex: " + search);
+                log.error("Błędny regex: {}", search);
             }
         });
+    }
+
+    private static String getText(JTextPane textPane) {
+        String originalText = null;
+        try {
+            originalText = textPane.getStyledDocument().getText(0, textPane.getStyledDocument().getLength());
+        } catch (BadLocationException ex) {
+            throw new RuntimeException(ex);
+        }
+        return originalText;
     }
 }

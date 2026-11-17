@@ -1,5 +1,7 @@
 package pl.cbr.notebook;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,7 +16,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.sql.Date;
 
-
+@Slf4j
 public class FileStorage {
 
     public static FileData load(String fileName) {
@@ -61,7 +63,7 @@ public class FileStorage {
         try {
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println(e.getMessage() + "," + e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -71,7 +73,7 @@ public class FileStorage {
         try {
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println(e.getMessage() + "," + e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -79,7 +81,7 @@ public class FileStorage {
         File dir = new File(dirName);
         if (!exists(dirName)) {
             boolean mkdirResult = dir.mkdir();
-            System.out.println("mkdir: " + dirName + ", " + mkdirResult);
+            log.info("mkdir: {}, {}", dirName, mkdirResult);
         }
     }
 
@@ -99,7 +101,7 @@ public class FileStorage {
             fileLastModifiedDate = Files.getLastModifiedTime(path);
             return new Date(fileLastModifiedDate.toMillis());
         } catch (IOException e) {
-            System.err.println("Cannot get the last modified time - " + e);
+            log.error("Cannot get the last modified time - ", e);
         }
         return new Date(System.currentTimeMillis());
     }
